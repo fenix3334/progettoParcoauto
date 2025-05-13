@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Aggiungi Scadenza</h1>
+<form method="post">
+  <div class="mb-3"><label class="form-label">Veicolo</label><select name="veicolo_id" class="form-select">{% for v in veicoli %}<option value="{{ v.id }}">{{ v.targa }}</option>{% endfor %}</select></div>
+  <div class="mb-3"><label class="form-label">Tipo</label><input name="tipo" class="form-control"></div>
+  <div class="mb-3"><label class="form-label">Data</label><input name="data" type="date" class="form-control"></div>
+  <button class="btn btn-success">Salva</button>
+</form>
+{% endblock %}

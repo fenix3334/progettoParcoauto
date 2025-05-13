@@ -1,0 +1,56 @@
+body {
+  background: linear-gradient(135deg, #f0f4f8 0%, #b3cde0 100%);
+  color: #333;
+}
+.navbar {
+  background-color: #b3cde0 !important;
+}
+.navbar .nav-link {
+  color: #333 !important;
+}
+.navbar .nav-link:hover {
+  color: #045a8d !important;
+}
+.card {
+  background-color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: #333;
+}
+.table thead {
+  background-color: #dae8fc;
+}
+.table tbody tr {
+  background-color: #f7faff;
+}
+.btn-primary {
+  background-color: #6faed3;
+  border-color: #5b95b8;
+}
+.btn-primary:hover {
+  background-color: #76b7dd;
+}
+.btn-warning {
+  background-color: #fcd79b;
+  border-color: #f0c066;
+}
+.btn-success {
+  background-color: #a8d5a2;
+  border-color: #8cbf88;
+}
+.btn-danger {
+  background-color: #e88c8c;
+  border-color: #d26a6a;
+}
+.accordion-button {
+  background-color: #dae8fc;
+  color: #333;
+}
+.accordion-button:not(.collapsed) {
+  background-color: #b3cde0;
+  color: #045a8d;
+}
+.accordion-body {
+  background-color: #f7faff;
+  color: #333;
+}

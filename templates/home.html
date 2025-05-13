@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Elenco Veicoli</h1>
+<a href="{{ url_for('vehicoli.aggiungi') }}" class="btn btn-primary mb-3">Aggiungi Veicolo</a>
+<table id="veicoliTable" class="table table-striped">
+    <thead>
+        <tr><th>Targa</th><th>Marca</th><th>Modello</th><th>Anno</th><th>KM</th><th>Azioni</th></tr>
+    </thead>
+    <tbody>
+        {% for v in veicoli %}
+        <tr>
+            <td>{{ v.targa }}</td><td>{{ v.marca }}</td><td>{{ v.modello }}</td><td>{{ v.anno }}</td><td>{{ v.km }}</td>
+            <td>
+                <a href="{{ url_for('vehicoli.dettaglio', id=v.id) }}" class="btn btn-sm btn-info">Dettagli</a>
+                <a href="{{ url_for('vehicoli.modifica', id=v.id) }}" class="btn btn-sm btn-warning">Modifica</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>$(document).ready(function() { $('#veicoliTable').DataTable(); });</script>
+{% endblock %}

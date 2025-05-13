@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Dettagli Veicolo</h1>
+<ul class="list-group">
+  <li class="list-group-item"><strong>Targa:</strong> {{ veicolo.targa }}</li>
+  <li class="list-group-item"><strong>Marca:</strong> {{ veicolo.marca }}</li>
+  <Li class="list-group-item"><strong>Modello:</strong> {{ veicolo.modello }}</Li>
+  <li class="list-group-item"><strong>Anno:</strong> {{ veicolo.anno }}</li>
+  <li class="list-group-item"><strong>KM:</strong> {{ veicolo.km }}</li>
+</ul>
+<a href="{{ url_for('vehicoli.home') }}" class="btn btn-primary mt-3">Torni indietro</a>
+{% endblock %}

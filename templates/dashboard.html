@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>📊 Dashboard Parco Auto</h1>
+<div class="row g-3 my-4">
+  <div class="col-md-4"><div class="card text-white bg-primary"><div class="card-body"><h5 class="card-title">Totale Veicoli</h5><p class="card-text fs-2">{{ total }}</p></div></div></div>
+  <div class="col-md-4"><div class="card text-white bg-warning"><div class="card-body"><h5 class="card-title">Scadenze &lt;30 gg</h5><p class="card-text fs-2">{{ soon }}</p></div></div></div>
+  <div class="col-md-4"><div class="card text-white bg-success"><div class="card-body"><h5 class="card-title">KM Medi</h5><p class="card-text fs-2">{{ avg_km }}</p></div></div></div>
+</div>
+<div class="card"><div class="card-body"><canvas id="kmChart" height="100"></canvas></div></div>
+{% endblock %}
