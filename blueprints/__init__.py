@@ -1,1 +1,1 @@
-# Blueprint package
+# blueprints __init__.py
