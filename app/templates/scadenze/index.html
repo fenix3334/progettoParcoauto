@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Scadenze - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-clock"></i>
+            GESTIONE SCADENZE
+        </h1>
+        <div class="page-actions">
+            <div class="filter-buttons">
+                <a href="{{ url_for('scadenze.index_scadenze', filtro='tutte') }}" 
+                   class="btn {% if filtro == 'tutte' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    <i class="fas fa-list"></i> Tutte
+                </a>
+                <a href="{{ url_for('scadenze.index_scadenze', filtro='urgenti') }}" 
+                   class="btn {% if filtro == 'urgenti' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    <i class="fas fa-exclamation-triangle"></i> Urgenti
+                </a>
+                <a href="{{ url_for('scadenze.index_scadenze', filtro='attive') }}" 
+                   class="btn {% if filtro == 'attive' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    <i class="fas fa-check-circle"></i> Attive
+                </a>
+            </div>
+            <a href="{{ url_for('scadenze.aggiungi_scadenza') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuova Scadenza
+            </a>
+        </div>
+    </div>
+
+    <div class="data-table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Tipo Scadenza</th>
+                    <th>Veicolo</th>
+                    <th>Data Scadenza</th>
+                    <th>Giorni Rimanenti</th>
+                    <th>Costo</th>
+                    <th>Stato</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scadenza in scadenze.items %}
+                <tr class="{% if scadenza.giorni_alla_scadenza <= 0 %}row-expired{% elif scadenza.giorni_alla_scadenza <= 7 %}row-critical{% elif scadenza.giorni_alla_scadenza <= 30 %}row-warning{% endif %}">
+                    <td>
+                        <div class="scadenza-type">
+                            <i class="fas fa-{% if scadenza.tipo_scadenza == 'Revisione' %}search{% elif scadenza.tipo_scadenza == 'Assicurazione' %}shield-alt{% elif scadenza.tipo_scadenza == 'Bollo' %}receipt{% else %}clock{% endif %}"></i>
+                            {{ scadenza.tipo_scadenza }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="vehicle-info">
+                            <div class="vehicle-plate">{{ scadenza.veicolo.targa }}</div>
+                            <div class="vehicle-model">{{ scadenza.veicolo.marca }} {{ scadenza.veicolo.modello }}</div>
+                        </div>
+                    </td>
+                    <td class="highlight">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        {% if scadenza.giorni_alla_scadenza <= 0 %}
+                            <span class="days-badge expired">SCADUTA</span>
+                        {% elif scadenza.giorni_alla_scadenza <= 7 %}
+                            <span class="days-badge critical">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                        {% elif scadenza.giorni_alla_scadenza <= 30 %}
+                            <span class="days-badge warning">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                        {% else %}
+                            <span class="days-badge ok">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if scadenza.costo %}
+                            <span class="cost-value">€{{ "%.2f"|format(scadenza.costo) }}</span>
+                        {% else %}
+                            <span class="text-muted">N/D</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ scadenza.stato.lower() }}">
+                            {{ scadenza.stato }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('scadenze.modifica_scadenza', id=scadenza.id) }}" class="btn-action" title="Modifica">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('scadenze.elimina_scadenza', id=scadenza.id) }}" class="btn-action delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questa scadenza?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-clock"></i>
+                        <p>Nessuna scadenza {% if filtro != 'tutte' %}{{ filtro }}{% endif %} trovata</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Alert scadenze critiche -->
+    {% set scadenze_critiche = scadenze.items|selectattr('giorni_alla_scadenza', '<=', 7)|list %}
+    {% if scadenze_critiche %}
+    <div class="alert-panel critical">
+        <div class="alert-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Attenzione: Scadenze Critiche!</h3>
+        </div>
+        <div class="alert-content">
+            <p>Ci sono {{ scadenze_critiche|length }} scadenze che richiedono attenzione immediata:</p>
+            <ul class="critical-list">
+                {% for scadenza in scadenze_critiche %}
+                <li>
+                    <strong>{{ scadenza.veicolo.targa }}</strong> - {{ scadenza.tipo_scadenza }}
+                    {% if scadenza.giorni_alla_scadenza <= 0 %}
+                        <span class="text-danger">(SCADUTA)</span>
+                    {% else %}
+                        <span class="text-warning">({{ scadenza.giorni_alla_scadenza }} giorni)</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Paginazione -->
+    {% if scadenze.pages > 1 %}
+    <div class="pagination">
+        {% if scadenze.has_prev %}
+            <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.prev_num, filtro=filtro) }}" class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        
+        {% for page_num in scadenze.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != scadenze.page %}
+                    <a href="{{ url_for('scadenze.index_scadenze', page=page_num, filtro=filtro) }}" class="page-btn">{{ page_num }}</a>
+                {% else %}
+                    <span class="page-btn active">{{ page_num }}</span>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if scadenze.has_next %}
+            <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.next_num, filtro=filtro) }}" class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Veicoli - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-car"></i>
+            GESTIONE VEICOLI
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('veicoli.aggiungi_veicolo') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Aggiungi Veicolo
+            </a>
+        </div>
+    </div>
+
+    <div class="data-table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Targa</th>
+                    <th>Marca/Modello</th>
+                    <th>Anno</th>
+                    <th>Carburante</th>
+                    <th>KM Attuali</th>
+                    <th>Stato</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for veicolo in veicoli.items %}
+                <tr>
+                    <td class="highlight">{{ veicolo.targa }}</td>
+                    <td>{{ veicolo.marca }} {{ veicolo.modello }}</td>
+                    <td>{{ veicolo.anno_immatricolazione }}</td>
+                    <td>
+                        <span class="badge badge-{{ veicolo.carburante.lower() }}">
+                            {{ veicolo.carburante }}
+                        </span>
+                    </td>
+                    <td>{{ "{:,}".format(veicolo.km_attuali) }} km</td>
+                    <td>
+                        <span class="status-badge status-{{ veicolo.stato.lower().replace(' ', '-') }}">
+                            {{ veicolo.stato }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('veicoli.dettaglio_veicolo', id=veicolo.id) }}" class="btn-action" title="Dettagli">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ url_for('veicoli.modifica_veicolo', id=veicolo.id) }}" class="btn-action" title="Modifica">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('veicoli.elimina_veicolo', id=veicolo.id) }}" class="btn-action delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questo veicolo?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-car"></i>
+                        <p>Nessun veicolo registrato</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginazione -->
+    {% if veicoli.pages > 1 %}
+    <div class="pagination">
+        {% if veicoli.has_prev %}
+            <a href="{{ url_for('veicoli.index_veicoli', page=veicoli.prev_num) }}" class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        
+        {% for page_num in veicoli.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != veicoli.page %}
+                    <a href="{{ url_for('veicoli.index_veicoli', page=page_num) }}" class="page-btn">{{ page_num }}</a>
+                {% else %}
+                    <span class="page-btn active">{{ page_num }}</span>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if veicoli.has_next %}
+            <a href="{{ url_for('veicoli.index_veicoli', page=veicoli.next_num) }}" class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

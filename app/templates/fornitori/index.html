@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Fornitori - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-building"></i>
+            GESTIONE FORNITORI
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('fornitori.aggiungi_fornitore') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Aggiungi Fornitore
+            </a>
+        </div>
+    </div>
+
+    <div class="data-table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Ragione Sociale</th>
+                    <th>Settore</th>
+                    <th>Città</th>
+                    <th>Telefono</th>
+                    <th>Email</th>
+                    <th>Stato</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fornitore in fornitori.items %}
+                <tr>
+                    <td class="highlight">{{ fornitore.ragione_sociale }}</td>
+                    <td>
+                        {% if fornitore.settore %}
+                        <span class="badge badge-settore">{{ fornitore.settore }}</span>
+                        {% else %}
+                        <span class="text-muted">N/D</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ fornitore.citta }}{% if fornitore.provincia %} ({{ fornitore.provincia }}){% endif %}</td>
+                    <td>{{ fornitore.telefono or 'N/D' }}</td>
+                    <td>{{ fornitore.email or 'N/D' }}</td>
+                    <td>
+                        <span class="status-badge {% if fornitore.attivo %}status-attivo{% else %}status-inattivo{% endif %}">
+                            {% if fornitore.attivo %}Attivo{% else %}Inattivo{% endif %}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('fornitori.modifica_fornitore', id=fornitore.id) }}" class="btn-action" title="Modifica">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('fornitori.elimina_fornitore', id=fornitore.id) }}" class="btn-action delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questo fornitore?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-building"></i>
+                        <p>Nessun fornitore registrato</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginazione -->
+    {% if fornitori.pages > 1 %}
+    <div class="pagination">
+        {% if fornitori.has_prev %}
+            <a href="{{ url_for('fornitori.index_fornitori', page=fornitori.prev_num) }}" class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        
+        {% for page_num in fornitori.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != fornitori.page %}
+                    <a href="{{ url_for('fornitori.index_fornitori', page=page_num) }}" class="page-btn">{{ page_num }}</a>
+                {% else %}
+                    <span class="page-btn active">{{ page_num }}</span>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if fornitori.has_next %}
+            <a href="{{ url_for('fornitori.index_fornitori', page=fornitori.next_num) }}" class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

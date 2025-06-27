@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titolo }} - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1 class="form-title">
+            <i class="fas fa-car"></i>
+            {{ titolo }}
+        </h1>
+        <a href="{{ url_for('veicoli.index_veicoli') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Lista
+        </a>
+    </div>
+
+    <form method="POST" class="matrix-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-grid">
+            <div class="form-group">
+                {{ form.targa.label(class="form-label") }}
+                {{ form.targa(class="form-input") }}
+                {% if form.targa.errors %}
+                    <div class="form-errors">
+                        {% for error in form.targa.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.marca.label(class="form-label") }}
+                {{ form.marca(class="form-input") }}
+                {% if form.marca.errors %}
+                    <div class="form-errors">
+                        {% for error in form.marca.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.modello.label(class="form-label") }}
+                {{ form.modello(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.anno_immatricolazione.label(class="form-label") }}
+                {{ form.anno_immatricolazione(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.data_immatricolazione.label(class="form-label") }}
+                {{ form.data_immatricolazione(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.km_attuali.label(class="form-label") }}
+                {{ form.km_attuali(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.carburante.label(class="form-label") }}
+                {{ form.carburante(class="form-select") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.cilindrata.label(class="form-label") }}
+                {{ form.cilindrata(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.colore.label(class="form-label") }}
+                {{ form.colore(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.stato.label(class="form-label") }}
+                {{ form.stato(class="form-select") }}
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            {{ form.note.label(class="form-label") }}
+            {{ form.note(class="form-textarea", rows="4") }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Salva Veicolo
+            </button>
+            <a href="{{ url_for('veicoli.index_veicoli') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annulla
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

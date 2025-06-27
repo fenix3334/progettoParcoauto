@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titolo }} - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1 class="form-title">
+            <i class="fas fa-building"></i>
+            {{ titolo }}
+        </h1>
+        <a href="{{ url_for('fornitori.index_fornitori') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Torna alla Lista
+        </a>
+    </div>
+
+    <form method="POST" class="matrix-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-grid">
+            <div class="form-group">
+                {{ form.ragione_sociale.label(class="form-label") }}
+                {{ form.ragione_sociale(class="form-input") }}
+                {% if form.ragione_sociale.errors %}
+                    <div class="form-errors">
+                        {% for error in form.ragione_sociale.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.settore.label(class="form-label") }}
+                {{ form.settore(class="form-select") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.partita_iva.label(class="form-label") }}
+                {{ form.partita_iva(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.codice_fiscale.label(class="form-label") }}
+                {{ form.codice_fiscale(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.indirizzo.label(class="form-label") }}
+                {{ form.indirizzo(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.citta.label(class="form-label") }}
+                {{ form.citta(class="form-input") }}
+                {% if form.citta.errors %}
+                    <div class="form-errors">
+                        {% for error in form.citta.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.cap.label(class="form-label") }}
+                {{ form.cap(class="form-input") }}
+                {% if form.cap.errors %}
+                    <div class="form-errors">
+                        {% for error in form.cap.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.provincia.label(class="form-label") }}
+                {{ form.provincia(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.telefono.label(class="form-label") }}
+                {{ form.telefono(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.referente.label(class="form-label") }}
+                {{ form.referente(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    {{ form.attivo() }}
+                    {{ form.attivo.label(class="checkbox-label") }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            {{ form.note.label(class="form-label") }}
+            {{ form.note(class="form-textarea", rows="4") }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Salva Fornitore
+            </button>
+            <a href="{{ url_for('fornitori.index_fornitori') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annulla
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Manutenzioni - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-tools"></i>
+            GESTIONE MANUTENZIONI
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('manutenzioni.aggiungi_manutenzione') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuova Manutenzione
+            </a>
+        </div>
+    </div>
+
+    <div class="data-table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Veicolo</th>
+                    <th>Tipo Intervento</th>
+                    <th>KM</th>
+                    <th>Fornitore</th>
+                    <th>Costo</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for manutenzione in manutenzioni.items %}
+                <tr>
+                    <td class="highlight">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <div class="vehicle-info">
+                            <div class="vehicle-plate">{{ manutenzione.veicolo.targa }}</div>
+                            <div class="vehicle-model">{{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-intervento">{{ manutenzione.tipo_intervento }}</span>
+                    </td>
+                    <td>{{ "{:,}".format(manutenzione.km_intervento) }} km</td>
+                    <td>{{ manutenzione.fornitore.ragione_sociale if manutenzione.fornitore else 'N/D' }}</td>
+                    <td>
+                        {% if manutenzione.costo %}
+                            <span class="cost-value">€{{ "%.2f"|format(manutenzione.costo) }}</span>
+                        {% else %}
+                            <span class="text-muted">N/D</span>
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn-action" title="Modifica">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('manutenzioni.elimina_manutenzione', id=manutenzione.id) }}" class="btn-action delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questa manutenzione?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-tools"></i>
+                        <p>Nessuna manutenzione registrata</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginazione -->
+    {% if manutenzioni.pages > 1 %}
+    <div class="pagination">
+        {% if manutenzioni.has_prev %}
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num) }}" class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        
+        {% for page_num in manutenzioni.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != manutenzioni.page %}
+                    <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num) }}" class="page-btn">{{ page_num }}</a>
+                {% else %}
+                    <span class="page-btn active">{{ page_num }}</span>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if manutenzioni.has_next %}
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num) }}" class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

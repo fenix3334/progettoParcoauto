@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="page-title">
+            <i class="fas fa-tachometer-alt"></i>
+            DASHBOARD SISTEMA
+        </h1>
+        <div class="system-status">
+            <span class="status-indicator active"></span>
+            <span>Sistema Operativo</span>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.veicoli_attivi }}</div>
+                <div class="stat-label">Veicoli Attivi</div>
+                <div class="stat-sublabel">su {{ stats.totale_veicoli }} totali</div>
+            </div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.fornitori_attivi }}</div>
+                <div class="stat-label">Fornitori Attivi</div>
+                <div class="stat-sublabel">su {{ stats.totale_fornitori }} totali</div>
+            </div>
+            <div class="stat-trend stable">
+                <i class="fas fa-minus"></i>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-route"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ "{:,}".format(stats.km_totali) }}</div>
+                <div class="stat-label">KM Totali</div>
+                <div class="stat-sublabel">Media: {{ "{:,}".format(stats.km_media) }} km</div>
+            </div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+        </div>
+
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.scadenze_urgenti }}</div>
+                <div class="stat-label">Scadenze Urgenti</div>
+                <div class="stat-sublabel">entro 30 giorni</div>
+            </div>
+            <div class="stat-trend down">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.totale_manutenzioni }}</div>
+                <div class="stat-label">Manutenzioni</div>
+                <div class="stat-sublabel">totali registrate</div>
+            </div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-euro-sign"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">€{{ "%.2f"|format(stats.costi_mese) }}</div>
+                <div class="stat-label">Costi Mese</div>
+                <div class="stat-sublabel">manutenzioni correnti</div>
+            </div>
+            <div class="stat-trend down">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Tables -->
+    <div class="dashboard-grid">
+        <!-- Scadenze Urgenti -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-clock"></i> Scadenze Urgenti</h3>
+                <a href="{{ url_for('scadenze.index_scadenze') }}" class="panel-link">
+                    Visualizza Tutte <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="panel-content">
+                {% if scadenze_urgenti %}
+                    <div class="urgent-list">
+                        {% for scadenza in scadenze_urgenti %}
+                        <div class="urgent-item {% if scadenza.giorni_alla_scadenza <= 0 %}expired{% elif scadenza.giorni_alla_scadenza <= 7 %}critical{% endif %}">
+                            <div class="urgent-info">
+                                <div class="urgent-title">{{ scadenza.tipo_scadenza }}</div>
+                                <div class="urgent-vehicle">{{ scadenza.veicolo.targa }} - {{ scadenza.veicolo.marca }} {{ scadenza.veicolo.modello }}</div>
+                            </div>
+                            <div class="urgent-date">
+                                <div class="date">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</div>
+                                <div class="days {% if scadenza.giorni_alla_scadenza <= 0 %}expired{% elif scadenza.giorni_alla_scadenza <= 7 %}critical{% endif %}">
+                                    {% if scadenza.giorni_alla_scadenza <= 0 %}
+                                        SCADUTA
+                                    {% elif scadenza.giorni_alla_scadenza <= 7 %}
+                                        {{ scadenza.giorni_alla_scadenza }} giorni
+                                    {% else %}
+                                        {{ scadenza.giorni_alla_scadenza }} giorni
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Nessuna scadenza urgente</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Ultime Manutenzioni -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-tools"></i> Ultime Manutenzioni</h3>
+                <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" class="panel-link">
+                    Visualizza Tutte <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="panel-content">
+                {% if ultime_manutenzioni %}
+                    <div class="maintenance-list">
+                        {% for manutenzione in ultime_manutenzioni %}
+                        <div class="maintenance-item">
+                            <div class="maintenance-info">
+                                <div class="maintenance-type">{{ manutenzione.tipo_intervento }}</div>
+                                <div class="maintenance-vehicle">{{ manutenzione.veicolo.targa }} - {{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}</div>
+                            </div>
+                            <div class="maintenance-details">
+                                <div class="maintenance-date">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</div>
+                                {% if manutenzione.costo %}
+                                <div class="maintenance-cost">€{{ "%.2f"|format(manutenzione.costo) }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-tools"></i>
+                        <p>Nessuna manutenzione registrata</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Grafici -->
+        <div class="dashboard-panel chart-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-chart-pie"></i> Distribuzione Carburante</h3>
+            </div>
+            <div class="panel-content">
+                <canvas id="fuelChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-panel chart-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-chart-line"></i> Trend Manutenzioni</h3>
+            </div>
+            <div class="panel-content">
+                <canvas id="maintenanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3><i class="fas fa-bolt"></i> Azioni Rapide</h3>
+        <div class="actions-grid">
+            <a href="{{ url_for('veicoli.aggiungi_veicolo') }}" class="action-button">
+                <i class="fas fa-plus"></i>
+                <span>Aggiungi Veicolo</span>
+            </a>
+            <a href="{{ url_for('manutenzioni.aggiungi_manutenzione') }}" class="action-button">
+                <i class="fas fa-tools"></i>
+                <span>Nuova Manutenzione</span>
+            </a>
+            <a href="{{ url_for('scadenze.aggiungi_scadenza') }}" class="action-button">
+                <i class="fas fa-calendar-plus"></i>
+                <span>Aggiungi Scadenza</span>
+            </a>
+            <a href="{{ url_for('fornitori.aggiungi_fornitore') }}" class="action-button">
+                <i class="fas fa-building"></i>
+                <span>Nuovo Fornitore</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+// Carica dati per i grafici
+fetch('/api/chart-data')
+    .then(response => response.json())
+    .then(data => {
+        // Grafico distribuzione carburante
+        const fuelCtx = document.getElementById('fuelChart').getContext('2d');
+        new Chart(fuelCtx, {
+            type: 'doughnut',
+            data: {
+                labels: data.carburante.map(item => item.label),
+                datasets: [{
+                    data: data.carburante.map(item => item.value),
+                    backgroundColor: [
+                        '#00ff41', '#00cc33', '#009926', '#006619', '#00330c'
+                    ],
+                    borderColor: '#00ff41',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#00ff41'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Grafico trend manutenzioni
+        const maintenanceCtx = document.getElementById('maintenanceChart').getContext('2d');
+        new Chart(maintenanceCtx, {
+            type: 'line',
+            data: {
+                labels: data.manutenzioni.map(item => item.mese),
+                datasets: [{
+                    label: 'Numero Manutenzioni',
+                    data: data.manutenzioni.map(item => item.count),
+                    borderColor: '#00ff41',
+                    backgroundColor: 'rgba(0, 255, 65, 0.1)',
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        ticks: {
+                            color: '#00ff41'
+                        },
+                        grid: {
+                            color: 'rgba(0, 255, 65, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#00ff41'
+                        },
+                        grid: {
+                            color: 'rgba(0, 255, 65, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#00ff41'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}{{ veicolo.targa }} - Dettaglio Veicolo{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <h1 class="detail-title">
+            <i class="fas fa-car"></i>
+            {{ veicolo.targa }} - {{ veicolo.marca }} {{ veicolo.modello }}
+        </h1>
+        <div class="detail-actions">
+            <a href="{{ url_for('veicoli.modifica_veicolo', id=veicolo.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Modifica
+            </a>
+            <a href="{{ url_for('veicoli.index_veicoli') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Torna alla Lista
+            </a>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-panel">
+            <h3><i class="fas fa-info-circle"></i> Informazioni Generali</h3>
+            <div class="detail-content">
+                <div class="detail-row">
+                    <span class="detail-label">Targa:</span>
+                    <span class="detail-value highlight">{{ veicolo.targa }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Marca:</span>
+                    <span class="detail-value">{{ veicolo.marca }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Modello:</span>
+                    <span class="detail-value">{{ veicolo.modello }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Anno:</span>
+                    <span class="detail-value">{{ veicolo.anno_immatricolazione }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Data Immatricolazione:</span>
+                    <span class="detail-value">{{ veicolo.data_immatricolazione.strftime('%d/%m/%Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Stato:</span>
+                    <span class="status-badge status-{{ veicolo.stato.lower().replace(' ', '-') }}">
+                        {{ veicolo.stato }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-panel">
+            <h3><i class="fas fa-cogs"></i> Specifiche Tecniche</h3>
+            <div class="detail-content">
+                <div class="detail-row">
+                    <span class="detail-label">Carburante:</span>
+                    <span class="badge badge-{{ veicolo.carburante.lower() }}">{{ veicolo.carburante }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Cilindrata:</span>
+                    <span class="detail-value">{{ veicolo.cilindrata or 'N/D' }} cc</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Colore:</span>
+                    <span class="detail-value">{{ veicolo.colore or 'N/D' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">KM Attuali:</span>
+                    <span class="detail-value highlight">{{ "{:,}".format(veicolo.km_attuali) }} km</span>
+                </div>
+            </div>
+        </div>
+
+        {% if veicolo.note %}
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-sticky-note"></i> Note</h3>
+            <div class="detail-content">
+                <p class="note-text">{{ veicolo.note }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Manutenzioni -->
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-tools"></i> Manutenzioni</h3>
+            <div class="detail-content">
+                {% if veicolo.manutenzioni %}
+                    <div class="maintenance-timeline">
+                        {% for manutenzione in veicolo.manutenzioni|sort(attribute='data_intervento', reverse=true) %}
+                        <div class="timeline-item">
+                            <div class="timeline-date">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">{{ manutenzione.tipo_intervento }}</div>
+                                <div class="timeline-details">KM: {{ "{:,}".format(manutenzione.km_intervento) }}</div>
+                                {% if manutenzione.costo %}
+                                <div class="timeline-cost">€{{ "%.2f"|format(manutenzione.costo) }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-tools"></i>
+                        <p>Nessuna manutenzione registrata</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Scadenze -->
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-clock"></i> Scadenze</h3>
+            <div class="detail-content">
+                {% if veicolo.scadenze %}
+                    <div class="scadenze-list">
+                        {% for scadenza in veicolo.scadenze|sort(attribute='data_scadenza') %}
+                        <div class="scadenza-item {% if scadenza.is_urgente %}urgent{% endif %}">
+                            <div class="scadenza-type">{{ scadenza.tipo_scadenza }}</div>
+                            <div class="scadenza-date">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</div>
+                            <div class="scadenza-status">
+                                {% if scadenza.giorni_alla_scadenza <= 0 %}
+                                    <span class="status-expired">SCADUTA</span>
+                                {% elif scadenza.giorni_alla_scadenza <= 7 %}
+                                    <span class="status-critical">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                                {% else %}
+                                    <span class="status-ok">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-clock"></i>
+                        <p>Nessuna scadenza registrata</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
