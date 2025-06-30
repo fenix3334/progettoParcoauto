@@ -17,199 +17,174 @@
     <form method="POST" class="matrix-form">
         {{ form.hidden_tag() }}
         
-        <!-- DATI PRINCIPALI -->
-        <h3 style="color: var(--matrix-green); margin-bottom: 1rem;">
-            <i class="fas fa-info-circle"></i> Dati Principali
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.ragione_sociale.label(class="form-label") }}
-                {{ form.ragione_sociale(class="form-input") }}
-                {% if form.ragione_sociale.errors %}
-                    <div class="form-errors">
-                        {% for error in form.ragione_sociale.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+        <!-- SEZIONE DATI AZIENDALI -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-building"></i> Dati Aziendali
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.ragione_sociale.label(class="form-label") }}
+                    {{ form.ragione_sociale(class="form-input") }}
+                    {% if form.ragione_sociale.errors %}
+                        <div class="form-errors">
+                            {% for error in form.ragione_sociale.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                {{ form.nucleo.label(class="form-label") }}
-                {{ form.nucleo(class="form-select") }}
-                <small class="form-help">Nucleo di appartenenza</small>
-            </div>
-        </div>
+                <div class="form-group">
+                    {{ form.partita_iva.label(class="form-label") }}
+                    {{ form.partita_iva(class="form-input") }}
+                </div>
 
-        <!-- SETTORI MULTIPLI -->
-        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
-            <i class="fas fa-industry"></i> Settori di Attività
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.settore.label(class="form-label") }}
-                {{ form.settore(class="form-select", id="settore-select") }}
-            </div>
+                <div class="form-group">
+                    {{ form.codice_fiscale.label(class="form-label") }}
+                    {{ form.codice_fiscale(class="form-input") }}
+                </div>
 
-            <div class="form-group">
-                {{ form.settore_2.label(class="form-label") }}
-                {{ form.settore_2(class="form-select") }}
-                <small class="form-help">Settore aggiuntivo (opzionale)</small>
-            </div>
-
-            <div class="form-group">
-                {{ form.settore_3.label(class="form-label") }}
-                {{ form.settore_3(class="form-select") }}
-                <small class="form-help">Terzo settore (opzionale)</small>
-            </div>
-
-            <div class="form-group" id="settore-personalizzato-group" style="display: none;">
-                {{ form.settore_personalizzato.label(class="form-label") }}
-                {{ form.settore_personalizzato(class="form-input") }}
-                <small class="form-help">Specifica il settore se hai selezionato "Altro"</small>
-            </div>
-        </div>
-
-        <!-- DATI FISCALI -->
-        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
-            <i class="fas fa-file-invoice"></i> Dati Fiscali
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.partita_iva.label(class="form-label") }}
-                {{ form.partita_iva(class="form-input") }}
-                <small class="form-help">Lascia vuoto se non applicabile</small>
-            </div>
-
-            <div class="form-group">
-                {{ form.codice_fiscale.label(class="form-label") }}
-                {{ form.codice_fiscale(class="form-input") }}
-                <small class="form-help">Lascia vuoto se non applicabile</small>
-            </div>
-        </div>
-
-        <!-- INDIRIZZO -->
-        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
-            <i class="fas fa-map-marker-alt"></i> Indirizzo
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.indirizzo.label(class="form-label") }}
-                {{ form.indirizzo(class="form-input") }}
-            </div>
-
-            <div class="form-group">
-                {{ form.citta.label(class="form-label") }}
-                {{ form.citta(class="form-input") }}
-                {% if form.citta.errors %}
-                    <div class="form-errors">
-                        {% for error in form.citta.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.cap.label(class="form-label") }}
-                {{ form.cap(class="form-input") }}
-                {% if form.cap.errors %}
-                    <div class="form-errors">
-                        {% for error in form.cap.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.provincia.label(class="form-label") }}
-                {{ form.provincia(class="form-input") }}
-            </div>
-        </div>
-
-        <!-- CONTATTI MULTIPLI -->
-        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
-            <i class="fas fa-phone"></i> Contatti
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.telefono.label(class="form-label") }}
-                {{ form.telefono(class="form-input") }}
-            </div>
-
-            <div class="form-group">
-                {{ form.telefono_2.label(class="form-label") }}
-                {{ form.telefono_2(class="form-input") }}
-                <small class="form-help">Telefono aggiuntivo (opzionale)</small>
-            </div>
-
-            <div class="form-group">
-                {{ form.telefono_3.label(class="form-label") }}
-                {{ form.telefono_3(class="form-input") }}
-                <small class="form-help">Terzo telefono (opzionale)</small>
-            </div>
-
-            <div class="form-group">
-                {{ form.email.label(class="form-label") }}
-                {{ form.email(class="form-input") }}
-                {% if form.email.errors %}
-                    <div class="form-errors">
-                        {% for error in form.email.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.email_2.label(class="form-label") }}
-                {{ form.email_2(class="form-input") }}
-                <small class="form-help">Email aggiuntiva (opzionale)</small>
-                {% if form.email_2.errors %}
-                    <div class="form-errors">
-                        {% for error in form.email_2.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.email_3.label(class="form-label") }}
-                {{ form.email_3(class="form-input") }}
-                <small class="form-help">Terza email (opzionale)</small>
-                {% if form.email_3.errors %}
-                    <div class="form-errors">
-                        {% for error in form.email_3.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                {{ form.referente.label(class="form-label") }}
-                {{ form.referente(class="form-input") }}
-            </div>
-
-            <div class="form-group">
-                <div class="checkbox-group">
-                    {{ form.attivo(class="form-checkbox") }}
-                    {{ form.attivo.label(class="checkbox-label") }}
+                <div class="form-group">
+                    {{ form.nucleo.label(class="form-label") }}
+                    {{ form.nucleo(class="form-select") }}
                 </div>
             </div>
         </div>
 
-        <!-- NOTE -->
-        <div class="form-group full-width">
-            {{ form.note.label(class="form-label") }}
-            {{ form.note(class="form-textarea", rows="4") }}
+        <!-- SEZIONE INDIRIZZO -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-map-marker-alt"></i> Indirizzo
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.indirizzo.label(class="form-label") }}
+                    {{ form.indirizzo(class="form-input") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.citta.label(class="form-label") }}
+                    {{ form.citta(class="form-input") }}
+                    {% if form.citta.errors %}
+                        <div class="form-errors">
+                            {% for error in form.citta.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.cap.label(class="form-label") }}
+                    {{ form.cap(class="form-input") }}
+                    {% if form.cap.errors %}
+                        <div class="form-errors">
+                            {% for error in form.cap.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.provincia.label(class="form-label") }}
+                    {{ form.provincia(class="form-input") }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE CONTATTI -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-address-book"></i> Contatti
+            </h3>
+            <div class="form-grid">
+                <!-- TELEFONI -->
+                <div class="form-group">
+                    {{ form.telefono.label(class="form-label") }}
+                    {{ form.telefono(class="form-input") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.telefono_2.label(class="form-label") }}
+                    {{ form.telefono_2(class="form-input") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.telefono_3.label(class="form-label") }}
+                    {{ form.telefono_3(class="form-input") }}
+                </div>
+
+                <!-- EMAIL -->
+                <div class="form-group">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-input") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.email_2.label(class="form-label") }}
+                    {{ form.email_2(class="form-input") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.email_3.label(class="form-label") }}
+                    {{ form.email_3(class="form-input") }}
+                </div>
+
+                <!-- REFERENTE -->
+                <div class="form-group">
+                    {{ form.referente.label(class="form-label") }}
+                    {{ form.referente(class="form-input") }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE SETTORI -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-tags"></i> Settori di Attività
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.settore.label(class="form-label") }}
+                    {{ form.settore(class="form-select") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.settore_2.label(class="form-label") }}
+                    {{ form.settore_2(class="form-select") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.settore_3.label(class="form-label") }}
+                    {{ form.settore_3(class="form-select") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.settore_personalizzato.label(class="form-label") }}
+                    {{ form.settore_personalizzato(class="form-input", placeholder="Es: Servizi specifici...") }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE NOTE E STATO -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-cog"></i> Impostazioni
+            </h3>
+            
+            <div class="form-group full-width">
+                {{ form.note.label(class="form-label") }}
+                {{ form.note(class="form-textarea", rows="4", placeholder="Note, informazioni aggiuntive...") }}
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    {{ form.attivo() }}
+                    {{ form.attivo.label(class="checkbox-label") }}
+                </div>
+            </div>
         </div>
 
         <div class="form-actions">
@@ -223,35 +198,52 @@
     </form>
 </div>
 
-<!-- Script per mostrare/nascondere settore personalizzato -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const settoreSelects = ['settore-select', 'settore_2', 'settore_3'];
-    const settorePersonalizzatoGroup = document.getElementById('settore-personalizzato-group');
-    
-    function toggleSettorePersonalizzato() {
-        let showPersonalizzato = false;
-        
-        settoreSelects.forEach(selectId => {
-            const select = document.getElementById(selectId) || document.querySelector(`select[name="${selectId}"]`);
-            if (select && select.value === 'Altro') {
-                showPersonalizzato = true;
-            }
-        });
-        
-        settorePersonalizzatoGroup.style.display = showPersonalizzato ? 'block' : 'none';
-    }
-    
-    // Controlla al caricamento della pagina
-    toggleSettorePersonalizzato();
-    
-    // Controlla quando cambia qualsiasi select settore
-    settoreSelects.forEach(selectId => {
-        const select = document.getElementById(selectId) || document.querySelector(`select[name="${selectId}"]`);
-        if (select) {
-            select.addEventListener('change', toggleSettorePersonalizzato);
-        }
-    });
-});
-</script>
+<style>
+.form-section {
+    background: linear-gradient(135deg, rgba(0, 20, 0, 0.05), rgba(0, 40, 0, 0.1));
+    border: 1px solid #0f3d0f;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    color: #00ff00;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #0f3d0f;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-title i {
+    margin-right: 8px;
+    color: #66ff66;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(0, 255, 0, 0.05);
+    border-radius: 4px;
+}
+
+.checkbox-label {
+    color: #00ff00 !important;
+    font-weight: normal;
+}
+</style>
 {% endblock %}

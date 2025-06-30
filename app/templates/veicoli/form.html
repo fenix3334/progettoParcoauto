@@ -17,132 +17,166 @@
     <form method="POST" class="matrix-form">
         {{ form.hidden_tag() }}
         
-        <!-- DATI PRINCIPALI -->
-        <h3 style="color: var(--matrix-green); margin-bottom: 1rem;">
-            <i class="fas fa-info-circle"></i> Dati Principali
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.targa.label(class="form-label") }}
-                {{ form.targa(class="form-input") }}
-                {% if form.targa.errors %}
-                    <div class="form-errors">
-                        {% for error in form.targa.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+        <!-- SEZIONE DATI VEICOLO -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-car"></i> Dati Veicolo
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.targa.label(class="form-label") }}
+                    {{ form.targa(class="form-input") }}
+                    {% if form.targa.errors %}
+                        <div class="form-errors">
+                            {% for error in form.targa.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                {{ form.marca.label(class="form-label") }}
-                {{ form.marca(class="form-input") }}
-                {% if form.marca.errors %}
-                    <div class="form-errors">
-                        {% for error in form.marca.errors %}
-                            <span class="error">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+                <div class="form-group">
+                    {{ form.marca.label(class="form-label") }}
+                    {{ form.marca(class="form-input") }}
+                    {% if form.marca.errors %}
+                        <div class="form-errors">
+                            {% for error in form.marca.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                {{ form.modello.label(class="form-label") }}
-                {{ form.modello(class="form-input") }}
-            </div>
+                <div class="form-group">
+                    {{ form.modello.label(class="form-label") }}
+                    {{ form.modello(class="form-input") }}
+                    {% if form.modello.errors %}
+                        <div class="form-errors">
+                            {% for error in form.modello.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                {{ form.anno_immatricolazione.label(class="form-label") }}
-                {{ form.anno_immatricolazione(class="form-input") }}
-            </div>
-
-            <div class="form-group">
-                {{ form.data_immatricolazione.label(class="form-label") }}
-                {{ form.data_immatricolazione(class="form-input") }}
-            </div>
-
-            <div class="form-group">
-                {{ form.km_attuali.label(class="form-label") }}
-                {{ form.km_attuali(class="form-input") }}
+                <div class="form-group">
+                    {{ form.nucleo.label(class="form-label") }}
+                    {{ form.nucleo(class="form-select") }}
+                </div>
             </div>
         </div>
 
-        <!-- CARBURANTE E CARATTERISTICHE -->
-        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
-            <i class="fas fa-gas-pump"></i> Carburante e Caratteristiche
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.carburante.label(class="form-label") }}
-                {{ form.carburante(class="form-select", id="carburante-select") }}
-            </div>
+        <!-- SEZIONE IMMATRICOLAZIONE -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-calendar-alt"></i> Immatricolazione
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.anno_immatricolazione.label(class="form-label") }}
+                    {{ form.anno_immatricolazione(class="form-input") }}
+                    {% if form.anno_immatricolazione.errors %}
+                        <div class="form-errors">
+                            {% for error in form.anno_immatricolazione.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group" id="carburante-personalizzato-group" style="display: none;">
-                {{ form.carburante_personalizzato.label(class="form-label") }}
-                {{ form.carburante_personalizzato(class="form-input") }}
-                <small class="form-help">Specifica il tipo di carburante se hai selezionato "Altro"</small>
-            </div>
+                <div class="form-group">
+                    {{ form.data_immatricolazione.label(class="form-label") }}
+                    {{ form.data_immatricolazione(class="form-input") }}
+                    {% if form.data_immatricolazione.errors %}
+                        <div class="form-errors">
+                            {% for error in form.data_immatricolazione.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                {{ form.cilindrata.label(class="form-label") }}
-                {{ form.cilindrata(class="form-input") }}
-            </div>
+                <div class="form-group">
+                    {{ form.km_attuali.label(class="form-label") }}
+                    {{ form.km_attuali(class="form-input") }}
+                </div>
 
-            <div class="form-group">
-                {{ form.colore.label(class="form-label") }}
-                {{ form.colore(class="form-input") }}
-            </div>
-
-            <div class="form-group">
-                {{ form.stato.label(class="form-label") }}
-                {{ form.stato(class="form-select") }}
-            </div>
-
-            <div class="form-group">
-                {{ form.nucleo.label(class="form-label") }}
-                {{ form.nucleo(class="form-select") }}
-                <small class="form-help">Seleziona il nucleo di appartenenza</small>
-            </div>
-        </div>
-
-        <!-- CARTA CARBURANTE -->
-        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
-            <i class="fas fa-credit-card"></i> Carta Carburante
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.carta_carburante.label(class="form-label") }}
-                {{ form.carta_carburante(class="form-input") }}
-                <small class="form-help">Tipo di carta carburante utilizzata</small>
-            </div>
-
-            <div class="form-group">
-                {{ form.pin_carburante.label(class="form-label") }}
-                {{ form.pin_carburante(class="form-input", type="password") }}
-                <small class="form-help">PIN per l'utilizzo della carta</small>
+                <div class="form-group">
+                    {{ form.stato.label(class="form-label") }}
+                    {{ form.stato(class="form-select") }}
+                </div>
             </div>
         </div>
 
-        <!-- NOLEGGIO -->
-        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
-            <i class="fas fa-handshake"></i> Informazioni Noleggio
-        </h3>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                {{ form.societa_noleggio_id.label(class="form-label") }}
-                {{ form.societa_noleggio_id(class="form-select") }}
-                <small class="form-help">Lascia vuoto se il veicolo è di proprietà</small>
+        <!-- SEZIONE CARATTERISTICHE TECNICHE -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-cogs"></i> Caratteristiche Tecniche
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.carburante.label(class="form-label") }}
+                    {{ form.carburante(class="form-select", id="carburante-select") }}
+                </div>
+
+                <div class="form-group" id="carburante-personalizzato-group" style="display: none;">
+                    {{ form.carburante_personalizzato.label(class="form-label") }}
+                    {{ form.carburante_personalizzato(class="form-input", placeholder="Es: Idrogeno, E85, ecc.") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.cilindrata.label(class="form-label") }}
+                    {{ form.cilindrata(class="form-input") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.colore.label(class="form-label") }}
+                    {{ form.colore(class="form-input") }}
+                </div>
             </div>
         </div>
 
-        <!-- NOTE -->
-        <div class="form-group full-width">
-            {{ form.note.label(class="form-label") }}
-            {{ form.note(class="form-textarea", rows="4") }}
+        <!-- SEZIONE CARTA CARBURANTE -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-credit-card"></i> Carta Carburante
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.carta_carburante.label(class="form-label") }}
+                    {{ form.carta_carburante(class="form-input", placeholder="1234-5678-9012-3456") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.pin_carburante.label(class="form-label") }}
+                    {{ form.pin_carburante(class="form-input", placeholder="****", type="password") }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE INFORMAZIONI NOLEGGIO -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-handshake"></i> Informazioni Noleggio
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.societa_noleggio_id.label(class="form-label") }}
+                    {{ form.societa_noleggio_id(class="form-select") }}
+                    <small class="form-help">Seleziona la società se il veicolo è a noleggio</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE NOTE -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-sticky-note"></i> Note
+            </h3>
+            <div class="form-group full-width">
+                {{ form.note.label(class="form-label") }}
+                {{ form.note(class="form-textarea", rows="4", placeholder="Note aggiuntive sul veicolo...") }}
+            </div>
         </div>
 
         <div class="form-actions">
@@ -156,25 +190,68 @@
     </form>
 </div>
 
-<!-- Script per mostrare/nascondere carburante personalizzato -->
 <script>
+// Mostra/nascondi campo carburante personalizzato
+document.getElementById('carburante-select').addEventListener('change', function() {
+    const personalizzatoGroup = document.getElementById('carburante-personalizzato-group');
+    if (this.value === 'Personalizzato') {
+        personalizzatoGroup.style.display = 'block';
+        personalizzatoGroup.querySelector('input').required = true;
+    } else {
+        personalizzatoGroup.style.display = 'none';
+        personalizzatoGroup.querySelector('input').required = false;
+        personalizzatoGroup.querySelector('input').value = '';
+    }
+});
+
+// Inizializza lo stato al caricamento della pagina
 document.addEventListener('DOMContentLoaded', function() {
     const carburanteSelect = document.getElementById('carburante-select');
-    const carburantePersonalizzatoGroup = document.getElementById('carburante-personalizzato-group');
-    
-    function toggleCarburantePersonalizzato() {
-        if (carburanteSelect.value === 'Personalizzato') {
-            carburantePersonalizzatoGroup.style.display = 'block';
-        } else {
-            carburantePersonalizzatoGroup.style.display = 'none';
-        }
+    if (carburanteSelect.value === 'Personalizzato') {
+        document.getElementById('carburante-personalizzato-group').style.display = 'block';
     }
-    
-    // Controlla al caricamento della pagina
-    toggleCarburantePersonalizzato();
-    
-    // Controlla quando cambia la selezione
-    carburanteSelect.addEventListener('change', toggleCarburantePersonalizzato);
 });
 </script>
+
+<style>
+.form-section {
+    background: linear-gradient(135deg, rgba(0, 20, 0, 0.05), rgba(0, 40, 0, 0.1));
+    border: 1px solid #0f3d0f;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    color: #00ff00;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #0f3d0f;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-title i {
+    margin-right: 8px;
+    color: #66ff66;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-help {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+    font-size: 0.85em;
+}
+</style>
 {% endblock %}
