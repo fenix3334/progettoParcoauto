@@ -14,6 +14,9 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     
+    # IMPORTANTE: Importa i modelli DOPO aver inizializzato db
+    from app import models
+    
     # Registra blueprint
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(veicoli_bp, url_prefix='/veicoli')
