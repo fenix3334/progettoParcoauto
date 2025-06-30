@@ -17,6 +17,11 @@
     <form method="POST" class="matrix-form">
         {{ form.hidden_tag() }}
         
+        <!-- DATI PRINCIPALI -->
+        <h3 style="color: var(--matrix-green); margin-bottom: 1rem;">
+            <i class="fas fa-info-circle"></i> Dati Principali
+        </h3>
+        
         <div class="form-grid">
             <div class="form-group">
                 {{ form.ragione_sociale.label(class="form-label") }}
@@ -31,20 +36,67 @@
             </div>
 
             <div class="form-group">
+                {{ form.nucleo.label(class="form-label") }}
+                {{ form.nucleo(class="form-select") }}
+                <small class="form-help">Nucleo di appartenenza</small>
+            </div>
+        </div>
+
+        <!-- SETTORI MULTIPLI -->
+        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
+            <i class="fas fa-industry"></i> Settori di Attività
+        </h3>
+        
+        <div class="form-grid">
+            <div class="form-group">
                 {{ form.settore.label(class="form-label") }}
-                {{ form.settore(class="form-select") }}
+                {{ form.settore(class="form-select", id="settore-select") }}
             </div>
 
             <div class="form-group">
+                {{ form.settore_2.label(class="form-label") }}
+                {{ form.settore_2(class="form-select") }}
+                <small class="form-help">Settore aggiuntivo (opzionale)</small>
+            </div>
+
+            <div class="form-group">
+                {{ form.settore_3.label(class="form-label") }}
+                {{ form.settore_3(class="form-select") }}
+                <small class="form-help">Terzo settore (opzionale)</small>
+            </div>
+
+            <div class="form-group" id="settore-personalizzato-group" style="display: none;">
+                {{ form.settore_personalizzato.label(class="form-label") }}
+                {{ form.settore_personalizzato(class="form-input") }}
+                <small class="form-help">Specifica il settore se hai selezionato "Altro"</small>
+            </div>
+        </div>
+
+        <!-- DATI FISCALI -->
+        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
+            <i class="fas fa-file-invoice"></i> Dati Fiscali
+        </h3>
+        
+        <div class="form-grid">
+            <div class="form-group">
                 {{ form.partita_iva.label(class="form-label") }}
                 {{ form.partita_iva(class="form-input") }}
+                <small class="form-help">Lascia vuoto se non applicabile</small>
             </div>
 
             <div class="form-group">
                 {{ form.codice_fiscale.label(class="form-label") }}
                 {{ form.codice_fiscale(class="form-input") }}
+                <small class="form-help">Lascia vuoto se non applicabile</small>
             </div>
+        </div>
 
+        <!-- INDIRIZZO -->
+        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
+            <i class="fas fa-map-marker-alt"></i> Indirizzo
+        </h3>
+        
+        <div class="form-grid">
             <div class="form-group">
                 {{ form.indirizzo.label(class="form-label") }}
                 {{ form.indirizzo(class="form-input") }}
@@ -78,15 +130,67 @@
                 {{ form.provincia.label(class="form-label") }}
                 {{ form.provincia(class="form-input") }}
             </div>
+        </div>
 
+        <!-- CONTATTI MULTIPLI -->
+        <h3 style="color: var(--matrix-green); margin: 2rem 0 1rem 0;">
+            <i class="fas fa-phone"></i> Contatti
+        </h3>
+        
+        <div class="form-grid">
             <div class="form-group">
                 {{ form.telefono.label(class="form-label") }}
                 {{ form.telefono(class="form-input") }}
             </div>
 
             <div class="form-group">
+                {{ form.telefono_2.label(class="form-label") }}
+                {{ form.telefono_2(class="form-input") }}
+                <small class="form-help">Telefono aggiuntivo (opzionale)</small>
+            </div>
+
+            <div class="form-group">
+                {{ form.telefono_3.label(class="form-label") }}
+                {{ form.telefono_3(class="form-input") }}
+                <small class="form-help">Terzo telefono (opzionale)</small>
+            </div>
+
+            <div class="form-group">
                 {{ form.email.label(class="form-label") }}
                 {{ form.email(class="form-input") }}
+                {% if form.email.errors %}
+                    <div class="form-errors">
+                        {% for error in form.email.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.email_2.label(class="form-label") }}
+                {{ form.email_2(class="form-input") }}
+                <small class="form-help">Email aggiuntiva (opzionale)</small>
+                {% if form.email_2.errors %}
+                    <div class="form-errors">
+                        {% for error in form.email_2.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.email_3.label(class="form-label") }}
+                {{ form.email_3(class="form-input") }}
+                <small class="form-help">Terza email (opzionale)</small>
+                {% if form.email_3.errors %}
+                    <div class="form-errors">
+                        {% for error in form.email_3.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
             <div class="form-group">
@@ -96,12 +200,13 @@
 
             <div class="form-group">
                 <div class="checkbox-group">
-                    {{ form.attivo() }}
+                    {{ form.attivo(class="form-checkbox") }}
                     {{ form.attivo.label(class="checkbox-label") }}
                 </div>
             </div>
         </div>
 
+        <!-- NOTE -->
         <div class="form-group full-width">
             {{ form.note.label(class="form-label") }}
             {{ form.note(class="form-textarea", rows="4") }}
@@ -117,4 +222,36 @@
         </div>
     </form>
 </div>
+
+<!-- Script per mostrare/nascondere settore personalizzato -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const settoreSelects = ['settore-select', 'settore_2', 'settore_3'];
+    const settorePersonalizzatoGroup = document.getElementById('settore-personalizzato-group');
+    
+    function toggleSettorePersonalizzato() {
+        let showPersonalizzato = false;
+        
+        settoreSelects.forEach(selectId => {
+            const select = document.getElementById(selectId) || document.querySelector(`select[name="${selectId}"]`);
+            if (select && select.value === 'Altro') {
+                showPersonalizzato = true;
+            }
+        });
+        
+        settorePersonalizzatoGroup.style.display = showPersonalizzato ? 'block' : 'none';
+    }
+    
+    // Controlla al caricamento della pagina
+    toggleSettorePersonalizzato();
+    
+    // Controlla quando cambia qualsiasi select settore
+    settoreSelects.forEach(selectId => {
+        const select = document.getElementById(selectId) || document.querySelector(`select[name="${selectId}"]`);
+        if (select) {
+            select.addEventListener('change', toggleSettorePersonalizzato);
+        }
+    });
+});
+</script>
 {% endblock %}
