@@ -87,15 +87,6 @@ def add_missing_columns():
         cursor.execute("UPDATE manutenzioni SET nucleo = 'Via Capitel' WHERE nucleo IS NULL")
         cursor.execute("UPDATE scadenze SET nucleo = 'Via Capitel' WHERE nucleo IS NULL")
         
-        # Crea utente admin se non esiste
-        cursor.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("""
-                INSERT INTO users (username, password_hash, nucleo, attivo)
-                VALUES ('admin', 'admin123', 'Via Capitel', 1)
-            """)
-            print("  ✅ Utente admin creato (password: admin123)")
-        
         conn.commit()
         conn.close()
         
@@ -121,6 +112,22 @@ with app.app_context():
         # Crea solo tabelle mancanti (non sovrascrive)
         db.create_all()
         
+        # CONTROLLA SE ESISTE L'UTENTE ADMIN (SENZA SOVRASCRIVERE PASSWORD!)
+        admin_user = User.query.filter_by(username='admin').first()
+        if admin_user:
+            print("  ✅ Utente admin trovato - password mantenuta")
+        else:
+            # Crea utente admin SOLO se non esiste
+            admin = User(
+                username='admin',
+                nucleo='Via Capitel',
+                attivo=True
+            )
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            print("  ✅ Utente admin creato con password predefinita")
+        
         # Verifica se ci sono già dati
         veicoli_count = Veicolo.query.count()
         fornitori_count = Fornitore.query.count()
@@ -134,12 +141,13 @@ with app.app_context():
         print(f"   - Scadenze: {scadenze_count}")
         
         print("\n✅ Database aggiornato con successo!")
-        print("🆕 Nuove funzionalità disponibili:")
-        print("   - Carta carburante e PIN")
-        print("   - Gestione nuclei (Via Capitel/Campania)")
-        print("   - Settori multipli per fornitori")
-        print("   - Email e telefoni multipli")
-        print("   - Sistema login (admin/admin123)")
+        print("🆕 Funzionalità disponibili:")
+        print("   - 🔐 Sistema login sicuro con Flask-Login")
+        print("   - 🛡️  Password con hash Werkzeug")
+        print("   - 👤 Gestione sessioni utente")
+        print("   - 🚪 Logout automatico")
+        print("   - 🔒 Protezione route con @login_required")
+        print("   - 🔑 Cambio password (password personalizzate vengono mantenute)")
         
     else:
         print("🆕 Primo avvio - Creazione nuovo database...")
@@ -229,13 +237,13 @@ with app.app_context():
         db.session.add(veicolo1)
         db.session.add(veicolo2)
         
-        # Utente admin
+        # Utente admin con password sicura (SOLO AL PRIMO AVVIO)
         admin = User(
             username="admin",
             nucleo="Via Capitel",
             attivo=True
         )
-        admin.set_password("admin123")
+        admin.set_password("admin123")  # Password predefinita solo alla creazione
         db.session.add(admin)
         
         try:
@@ -250,4 +258,5 @@ with app.app_context():
     
     print("\n🚀 Usa il file BAT per avviare l'applicazione!")
     print("🌐 Poi apri: http://localhost:5000")
-    print("👤 Login: admin / admin123")
+    print("👤 Login: admin / password-corrente")
+    print("🔐 Sistema login implementato con successo!")

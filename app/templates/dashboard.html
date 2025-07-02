@@ -15,7 +15,7 @@
         </div>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Stats Cards (Solo quelle richieste) -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon">
@@ -42,20 +42,6 @@
             </div>
             <div class="stat-trend stable">
                 <i class="fas fa-minus"></i>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-route"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-number">{{ "{:,}".format(stats.km_totali) }}</div>
-                <div class="stat-label">KM Totali</div>
-                <div class="stat-sublabel">Media: {{ "{:,}".format(stats.km_media) }} km</div>
-            </div>
-            <div class="stat-trend up">
-                <i class="fas fa-arrow-up"></i>
             </div>
         </div>
 
@@ -86,23 +72,9 @@
                 <i class="fas fa-arrow-up"></i>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-euro-sign"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-number">€{{ "%.2f"|format(stats.costi_mese) }}</div>
-                <div class="stat-label">Costi Mese</div>
-                <div class="stat-sublabel">manutenzioni correnti</div>
-            </div>
-            <div class="stat-trend down">
-                <i class="fas fa-arrow-down"></i>
-            </div>
-        </div>
     </div>
 
-    <!-- Charts and Tables -->
+    <!-- Pannelli Principali -->
     <div class="dashboard-grid">
         <!-- Scadenze Urgenti -->
         <div class="dashboard-panel">
@@ -179,132 +151,6 @@
                 {% endif %}
             </div>
         </div>
-
-        <!-- Grafici -->
-        <div class="dashboard-panel chart-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-chart-pie"></i> Distribuzione Carburante</h3>
-            </div>
-            <div class="panel-content">
-                <canvas id="fuelChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-
-        <div class="dashboard-panel chart-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-chart-line"></i> Trend Manutenzioni</h3>
-            </div>
-            <div class="panel-content">
-                <canvas id="maintenanceChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <h3><i class="fas fa-bolt"></i> Azioni Rapide</h3>
-        <div class="actions-grid">
-            <a href="{{ url_for('veicoli.aggiungi_veicolo') }}" class="action-button">
-                <i class="fas fa-plus"></i>
-                <span>Aggiungi Veicolo</span>
-            </a>
-            <a href="{{ url_for('manutenzioni.aggiungi_manutenzione') }}" class="action-button">
-                <i class="fas fa-tools"></i>
-                <span>Nuova Manutenzione</span>
-            </a>
-            <a href="{{ url_for('scadenze.aggiungi_scadenza') }}" class="action-button">
-                <i class="fas fa-calendar-plus"></i>
-                <span>Aggiungi Scadenza</span>
-            </a>
-            <a href="{{ url_for('fornitori.aggiungi_fornitore') }}" class="action-button">
-                <i class="fas fa-building"></i>
-                <span>Nuovo Fornitore</span>
-            </a>
-        </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-<script>
-// Carica dati per i grafici
-fetch('/api/chart-data')
-    .then(response => response.json())
-    .then(data => {
-        // Grafico distribuzione carburante
-        const fuelCtx = document.getElementById('fuelChart').getContext('2d');
-        new Chart(fuelCtx, {
-            type: 'doughnut',
-            data: {
-                labels: data.carburante.map(item => item.label),
-                datasets: [{
-                    data: data.carburante.map(item => item.value),
-                    backgroundColor: [
-                        '#00ff41', '#00cc33', '#009926', '#006619', '#00330c'
-                    ],
-                    borderColor: '#00ff41',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#00ff41'
-                        }
-                    }
-                }
-            }
-        });
-
-        // Grafico trend manutenzioni
-        const maintenanceCtx = document.getElementById('maintenanceChart').getContext('2d');
-        new Chart(maintenanceCtx, {
-            type: 'line',
-            data: {
-                labels: data.manutenzioni.map(item => item.mese),
-                datasets: [{
-                    label: 'Numero Manutenzioni',
-                    data: data.manutenzioni.map(item => item.count),
-                    borderColor: '#00ff41',
-                    backgroundColor: 'rgba(0, 255, 65, 0.1)',
-                    borderWidth: 2,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        ticks: {
-                            color: '#00ff41'
-                        },
-                        grid: {
-                            color: 'rgba(0, 255, 65, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#00ff41'
-                        },
-                        grid: {
-                            color: 'rgba(0, 255, 65, 0.1)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#00ff41'
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
 {% endblock %}

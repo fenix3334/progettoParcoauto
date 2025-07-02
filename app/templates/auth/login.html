@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Matrix Fleet Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/matrix_style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* STILI SPECIFICI PER LOGIN */
+        .login-container {
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--matrix-black) 0%, var(--matrix-darker) 100%);
+            position: relative;
+        }
+        
+        .login-box {
+            background: linear-gradient(135deg, var(--matrix-dark) 0%, var(--matrix-gray) 100%);
+            border: 2px solid var(--matrix-green);
+            border-radius: 15px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0, 255, 65, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--matrix-green), var(--matrix-green-light));
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            color: var(--matrix-green);
+            text-shadow: 0 0 20px var(--matrix-green);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .login-logo i {
+            font-size: 3rem;
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .login-subtitle {
+            color: var(--matrix-text-dim);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-form .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: var(--matrix-light-gray);
+            border: 2px solid var(--matrix-light-gray);
+            border-radius: 10px;
+            color: var(--matrix-text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .login-form .form-input:focus {
+            outline: none;
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+            background: var(--matrix-dark);
+        }
+        
+        .login-form .form-label {
+            display: block;
+            color: var(--matrix-green);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: var(--matrix-text);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--matrix-green) 0%, var(--matrix-green-dark) 100%);
+            color: var(--matrix-black);
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.4);
+        }
+        
+        .login-links {
+            text-align: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--matrix-light-gray);
+        }
+        
+        .password-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--matrix-text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+        
+        .password-link:hover {
+            color: var(--matrix-green);
+            background: rgba(0, 255, 65, 0.1);
+            text-shadow: 0 0 5px var(--matrix-green);
+        }
+        
+        .password-link i {
+            font-size: 0.8rem;
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--matrix-light-gray);
+            color: var(--matrix-text-dim);
+            font-size: 0.9rem;
+        }
+        
+        /* ANIMAZIONI */
+        @keyframes matrix-scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        .matrix-scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--matrix-green), transparent);
+            animation: matrix-scan 4s linear infinite;
+            opacity: 0.5;
+        }
+        
+        /* TOOLTIP PER SPIEGAZIONE */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 280px;
+            background: var(--matrix-dark);
+            color: var(--matrix-text);
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 150%;
+            left: 50%;
+            margin-left: -140px;
+            border: 1px solid var(--matrix-green);
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--matrix-green) transparent transparent transparent;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Effetto Matrix di sfondo -->
+    <div id="matrix-bg"></div>
+    <canvas id="matrix-canvas"></canvas>
+    <div class="matrix-scanline"></div>
+    
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-car-side"></i>
+                    <span>MATRIX FLEET</span>
+                </div>
+                <div class="login-subtitle">Sistema Avanzato di Gestione Parco Auto</div>
+            </div>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}" style="margin-bottom: 1.5rem;">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" class="login-form">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.username.label(class="form-label") }}
+                    {{ form.username(class="form-input", placeholder="Inserisci il tuo nome utente") }}
+                    {% if form.username.errors %}
+                        <div style="color: var(--matrix-danger); font-size: 0.9rem; margin-top: 0.5rem;">
+                            {% for error in form.username.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-input", placeholder="Inserisci la tua password") }}
+                    {% if form.password.errors %}
+                        <div style="color: var(--matrix-danger); font-size: 0.9rem; margin-top: 0.5rem;">
+                            {% for error in form.password.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="remember-me">
+                    {{ form.remember_me() }}
+                    {{ form.remember_me.label() }}
+                </div>
+                
+                {{ form.submit(class="login-btn") }}
+            </form>
+            
+            <!-- Link Cambia Password -->
+            <div class="login-links">
+                <div class="tooltip">
+                    <a href="{{ url_for('auth.change_password') }}" class="password-link">
+                        <i class="fas fa-key"></i>
+                        <span>Cambia Password</span>
+                    </a>
+                    <span class="tooltiptext">
+                        <strong>Accesso richiesto!</strong><br>
+                        Per cambiare la password devi prima fare login con le credenziali attuali.
+                    </span>
+                </div>
+            </div>
+            
+            <div class="login-footer">
+                <p>© 2025 Matrix Fleet Manager</p>
+                <p><strong>Creato da Luca G. Forti</strong></p>
+                <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--matrix-text-dim);">
+                    <i class="fas fa-info-circle"></i>
+                    Login predefinito: <strong>admin</strong> / <strong>admin123</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/matrix_effects.js') }}"></script>
+</body>
+</html>

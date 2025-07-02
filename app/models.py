@@ -1,5 +1,7 @@
 from app.extensions import db
 from datetime import datetime, date
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Veicolo(db.Model):
     __tablename__ = 'veicoli'
@@ -179,8 +181,8 @@ class Scadenza(db.Model):
         return f'<Scadenza {self.tipo_scadenza} - {self.data_scadenza}>'
 
 
-# NUOVA TABELLA PER GESTIONE UTENTI/NUCLEI
-class User(db.Model):
+# MODELLO USER CON FLASK-LOGIN
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -191,11 +193,26 @@ class User(db.Model):
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
     ultimo_accesso = db.Column(db.DateTime)
     
-    def check_password(self, password):
-        return self.password_hash == password
-    
     def set_password(self, password):
-        self.password_hash = password
+        """Imposta la password con hash sicuro"""
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        """Verifica la password"""
+        return check_password_hash(self.password_hash, password)
+    
+    # Metodi richiesti da Flask-Login
+    def is_authenticated(self):
+        return True
+    
+    def is_active(self):
+        return self.attivo
+    
+    def is_anonymous(self):
+        return False
+    
+    def get_id(self):
+        return str(self.id)
 
     def __repr__(self):
         return f'<User {self.username}>'

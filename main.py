@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Matrix Fleet Manager - Con backup automatico
+Matrix Fleet Manager - Con backup automatico e sistema login
 Versione aggiornata del main.py originale
 """
 import os
 import shutil
 from datetime import datetime
+from flask import redirect, url_for
+from flask_login import current_user
 from app import create_app
 
 def auto_backup():
@@ -84,8 +86,16 @@ def show_system_info():
 # Crea app Flask
 app = create_app()
 
+# Route principale - redirect a login se non autenticato
+@app.route('/')
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
+    else:
+        return redirect(url_for('auth.login'))
+
 if __name__ == '__main__':
-    print("🚀 MATRIX FLEET MANAGER - AVVIO")
+    print("🚀 MATRIX FLEET MANAGER - AVVIO CON SISTEMA LOGIN")
     
     # Backup automatico all'avvio
     auto_backup()
@@ -94,6 +104,7 @@ if __name__ == '__main__':
     show_system_info()
     
     print("🌐 Server in avvio su http://localhost:5000")
+    print("👤 Login predefinito: admin / admin123")
     print("⏹️  Premi CTRL+C per fermare")
     
     try:
