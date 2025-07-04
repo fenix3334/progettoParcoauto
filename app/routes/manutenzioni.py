@@ -33,7 +33,7 @@ def aggiungi_manutenzione():
         )
         db.session.add(manutenzione)
         db.session.commit()
-        flash('Manutenzione aggiunta con successo!', 'success')
+        flash(f'Manutenzione {manutenzione.veicolo.targa} aggiunta con successo!', 'success')
         return redirect(url_for('manutenzioni.index_manutenzioni'))
     return render_template('manutenzioni/form.html', form=form, titolo='Aggiungi Manutenzione')
 
@@ -44,7 +44,7 @@ def modifica_manutenzione(id):
     if form.validate_on_submit():
         form.populate_obj(manutenzione)
         db.session.commit()
-        flash('Manutenzione modificata con successo!', 'success')
+        flash(f'Manutenzione {manutenzione.veicolo.targa} modificata con successo!', 'success')
         return redirect(url_for('manutenzioni.index_manutenzioni'))
     return render_template('manutenzioni/form.html', form=form, titolo='Modifica Manutenzione')
 
@@ -53,5 +53,10 @@ def elimina_manutenzione(id):
     manutenzione = Manutenzione.query.get_or_404(id)
     db.session.delete(manutenzione)
     db.session.commit()
-    flash('Manutenzione eliminata con successo!', 'success')
+    flash(f'Manutenzione {manutenzione.veicolo.targa} eliminata con successo!', 'success')
     return redirect(url_for('manutenzioni.index_manutenzioni'))
+
+@manutenzioni_bp.route('/dettaglio/<int:id>')
+def dettaglio_manutenzione(id):
+    manutenzione = Manutenzione.query.get_or_404(id)
+    return render_template('manutenzioni/dettaglio.html', manutenzione=manutenzione)

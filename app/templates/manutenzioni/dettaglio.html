@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}{{ manutenzione.tipo_intervento }} - Dettaglio Manutenzione{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <h1 class="detail-title">
+            <i class="fas fa-tools"></i>
+            {{ manutenzione.tipo_intervento }} - {{ manutenzione.veicolo.targa }}
+        </h1>
+        <div class="detail-actions">
+            <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Modifica
+            </a>
+            <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Torna alla Lista
+            </a>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <!-- Informazioni Manutenzione -->
+        <div class="detail-panel">
+            <h3><i class="fas fa-info-circle"></i> Informazioni Manutenzione</h3>
+            <div class="detail-content">
+                <div class="detail-row">
+                    <span class="detail-label">Tipo Intervento:</span>
+                    <span class="badge badge-intervento">{{ manutenzione.tipo_intervento }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Data Intervento:</span>
+                    <span class="detail-value highlight">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">KM Intervento:</span>
+                    <span class="detail-value highlight">{{ "{:,}".format(manutenzione.km_intervento) }} km</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Costo:</span>
+                    <span class="detail-value">
+                        {% if manutenzione.costo %}
+                            <span class="cost-value">€{{ "%.2f"|format(manutenzione.costo) }}</span>
+                        {% else %}
+                            <span class="text-muted">Non specificato</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Numero Fattura:</span>
+                    <span class="detail-value">{{ manutenzione.numero_fattura or 'N/D' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Data Fattura:</span>
+                    <span class="detail-value">
+                        {% if manutenzione.data_fattura %}
+                            {{ manutenzione.data_fattura.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/D
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Garanzia:</span>
+                    <span class="detail-value">
+                        {% if manutenzione.garanzia_mesi > 0 %}
+                            {{ manutenzione.garanzia_mesi }} mesi
+                        {% else %}
+                            Nessuna garanzia
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Prossima Scadenza KM:</span>
+                    <span class="detail-value">
+                        {% if manutenzione.prossima_scadenza_km %}
+                            {{ "{:,}".format(manutenzione.prossima_scadenza_km) }} km
+                        {% else %}
+                            Non specificata
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Data Registrazione:</span>
+                    <span class="detail-value">{{ manutenzione.data_creazione.strftime('%d/%m/%Y alle %H:%M') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informazioni Veicolo -->
+        <div class="detail-panel">
+            <h3><i class="fas fa-car"></i> Veicolo</h3>
+            <div class="detail-content">
+                <div class="detail-row">
+                    <span class="detail-label">Targa:</span>
+                    <span class="detail-value highlight">{{ manutenzione.veicolo.targa }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Marca/Modello:</span>
+                    <span class="detail-value">{{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Anno:</span>
+                    <span class="detail-value">{{ manutenzione.veicolo.anno_immatricolazione }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">KM Attuali:</span>
+                    <span class="detail-value">{{ "{:,}".format(manutenzione.veicolo.km_attuali) }} km</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Carburante:</span>
+                    <span class="badge badge-{{ manutenzione.veicolo.carburante.lower() }}">{{ manutenzione.veicolo.carburante_display }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Stato:</span>
+                    <span class="status-badge status-{{ manutenzione.veicolo.stato.lower().replace(' ', '-') }}">
+                        {{ manutenzione.veicolo.stato }}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Nucleo:</span>
+                    <span class="detail-value">{{ manutenzione.veicolo.nucleo }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Azioni:</span>
+                    <span class="detail-value">
+                        <a href="{{ url_for('veicoli.dettaglio_veicolo', id=manutenzione.veicolo.id) }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-eye"></i> Vedi Dettagli Veicolo
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informazioni Fornitore -->
+        {% if manutenzione.fornitore %}
+        <div class="detail-panel">
+            <h3><i class="fas fa-building"></i> Fornitore</h3>
+            <div class="detail-content">
+                <div class="detail-row">
+                    <span class="detail-label">Ragione Sociale:</span>
+                    <span class="detail-value highlight">{{ manutenzione.fornitore.ragione_sociale }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Città:</span>
+                    <span class="detail-value">{{ manutenzione.fornitore.citta }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Telefono:</span>
+                    <span class="detail-value">{{ manutenzione.fornitore.telefono or 'N/D' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">{{ manutenzione.fornitore.email or 'N/D' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Settore:</span>
+                    <span class="detail-value">
+                        {% if manutenzione.fornitore.settore %}
+                            <span class="badge badge-settore">{{ manutenzione.fornitore.settore }}</span>
+                        {% else %}
+                            N/D
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Azioni:</span>
+                    <span class="detail-value">
+                        <a href="{{ url_for('fornitori.dettagli_fornitore', id=manutenzione.fornitore.id) }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-eye"></i> Vedi Dettagli Fornitore
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="detail-panel">
+            <h3><i class="fas fa-building"></i> Fornitore</h3>
+            <div class="detail-content">
+                <div class="empty-state">
+                    <i class="fas fa-building"></i>
+                    <p>Nessun fornitore associato</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Descrizione -->
+        {% if manutenzione.descrizione %}
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-file-text"></i> Descrizione</h3>
+            <div class="detail-content">
+                <p class="note-text">{{ manutenzione.descrizione }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Note -->
+        {% if manutenzione.note %}
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-sticky-note"></i> Note</h3>
+            <div class="detail-content">
+                <p class="note-text">{{ manutenzione.note }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Alert KM -->
+        {% if manutenzione.prossima_scadenza_km %}
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-tachometer-alt"></i> Controllo KM</h3>
+            <div class="detail-content">
+                {% set km_rimanenti = manutenzione.prossima_scadenza_km - manutenzione.veicolo.km_attuali %}
+                {% if km_rimanenti <= 0 %}
+                    <div class="alert-box critical">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>SCADENZA KM SUPERATA!</strong>
+                        <p>Il veicolo ha superato i KM previsti per la prossima manutenzione di {{ km_rimanenti|abs|string|replace('-', '') }} km.</p>
+                    </div>
+                {% elif km_rimanenti <= 1000 %}
+                    <div class="alert-box warning">
+                        <i class="fas fa-clock"></i>
+                        <strong>MANUTENZIONE IMMINENTE</strong>
+                        <p>Mancano solo {{ km_rimanenti }} km alla prossima manutenzione programmata.</p>
+                    </div>
+                {% else %}
+                    <div class="alert-box success">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>TUTTO OK</strong>
+                        <p>Prossima manutenzione tra {{ km_rimanenti }} km.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Altre Manutenzioni del Veicolo -->
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-history"></i> Storico Manutenzioni del Veicolo</h3>
+            <div class="detail-content">
+                {% set altre_manutenzioni = manutenzione.veicolo.manutenzioni|rejectattr('id', 'equalto', manutenzione.id)|list %}
+                {% if altre_manutenzioni %}
+                    <div class="maintenance-timeline">
+                        {% for altra_manutenzione in altre_manutenzioni|sort(attribute='data_intervento', reverse=true) %}
+                        <div class="timeline-item">
+                            <div class="timeline-date">{{ altra_manutenzione.data_intervento.strftime('%d/%m/%Y') }}</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">{{ altra_manutenzione.tipo_intervento }}</div>
+                                <div class="timeline-details">KM: {{ "{:,}".format(altra_manutenzione.km_intervento) }}</div>
+                                {% if altra_manutenzione.costo %}
+                                <div class="timeline-cost">€{{ "%.2f"|format(altra_manutenzione.costo) }}</div>
+                                {% endif %}
+                                <div class="timeline-actions">
+                                    <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=altra_manutenzione.id) }}" class="btn-action" title="Visualizza">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-tools"></i>
+                        <p>Nessun'altra manutenzione per questo veicolo</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Stili specifici per dettaglio manutenzioni */
+.alert-box {
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.alert-box.critical {
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid var(--matrix-danger);
+    color: var(--matrix-danger);
+}
+
+.alert-box.warning {
+    background: rgba(255, 165, 2, 0.1);
+    border: 1px solid var(--matrix-warning);
+    color: var(--matrix-warning);
+}
+
+.alert-box.success {
+    background: rgba(46, 213, 115, 0.1);
+    border: 1px solid var(--matrix-success);
+    color: var(--matrix-success);
+}
+
+.alert-box i {
+    font-size: 1.5rem;
+}
+
+.alert-box strong {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding-left: 3rem;
+    border-left: 2px solid var(--matrix-green);
+    padding-bottom: 1rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0.5rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--matrix-green);
+    box-shadow: 0 0 10px var(--matrix-green);
+}
+
+.timeline-date {
+    font-family: 'Orbitron', monospace;
+    color: var(--matrix-green);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-title {
+    font-weight: 500;
+    color: var(--matrix-text);
+    margin-bottom: 0.25rem;
+}
+
+.timeline-details {
+    color: var(--matrix-text-dim);
+    font-size: 0.9rem;
+}
+
+.timeline-cost {
+    color: var(--matrix-green);
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.timeline-actions {
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %}

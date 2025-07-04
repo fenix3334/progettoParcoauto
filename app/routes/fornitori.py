@@ -69,7 +69,7 @@ def aggiungi_fornitore():
             
             db.session.add(fornitore)
             db.session.commit()
-            flash('Fornitore aggiunto con successo!', 'success')
+            flash(f'Fornitore {fornitore.ragione_sociale} aggiunto con successo!', 'success')
             return redirect(url_for('fornitori.index_fornitori'))
             
         except Exception as e:
@@ -117,7 +117,7 @@ def modifica_fornitore(id):
             fornitore.attivo = form.attivo.data
             
             db.session.commit()
-            flash('Fornitore modificato con successo!', 'success')
+            flash(f'Fornitore {fornitore.ragione_sociale} modificato con successo!', 'success')
             return redirect(url_for('fornitori.index_fornitori'))
             
         except Exception as e:
@@ -138,17 +138,18 @@ def elimina_fornitore(id):
     try:
         # Controlla se ci sono manutenzioni associate
         if fornitore.manutenzioni:
-            flash(f'Impossibile eliminare: ci sono {len(fornitore.manutenzioni)} manutenzioni associate a questo fornitore.', 'error')
+            flash(f'Impossibile eliminare {fornitore.ragione_sociale}: ci sono {len(fornitore.manutenzioni)} manutenzioni associate a questo fornitore.', 'error')
             return redirect(url_for('fornitori.index_fornitori'))
         
         # Controlla se ci sono veicoli noleggio associati
         if fornitore.veicoli_noleggio:
-            flash(f'Impossibile eliminare: ci sono {len(fornitore.veicoli_noleggio)} veicoli noleggio associati a questo fornitore.', 'error')
+            flash(f'Impossibile eliminare {fornitore.ragione_sociale}: ci sono {len(fornitore.veicoli_noleggio)} veicoli noleggio associati a questo fornitore.', 'error')
             return redirect(url_for('fornitori.index_fornitori'))
         
+        ragione_sociale = fornitore.ragione_sociale  # Salva il nome prima di eliminare
         db.session.delete(fornitore)
         db.session.commit()
-        flash('Fornitore eliminato con successo!', 'success')
+        flash(f'Fornitore {ragione_sociale} eliminato con successo!', 'success')
         
     except Exception as e:
         db.session.rollback()

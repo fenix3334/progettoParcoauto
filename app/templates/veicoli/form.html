@@ -136,7 +136,7 @@
             </div>
         </div>
 
-        <!-- SEZIONE CARTA CARBURANTE -->
+        <!-- SEZIONE CARTA CARBURANTE CON PIN VISIBILE -->
         <div class="form-section">
             <h3 class="section-title">
                 <i class="fas fa-credit-card"></i> Carta Carburante
@@ -149,7 +149,12 @@
 
                 <div class="form-group">
                     {{ form.pin_carburante.label(class="form-label") }}
-                    {{ form.pin_carburante(class="form-input", placeholder="****", type="password") }}
+                    <div class="pin-input-container">
+                        {{ form.pin_carburante(class="form-input", placeholder="****", type="password", id="pin-carburante-field") }}
+                        <button type="button" class="pin-toggle-btn" onclick="togglePinVisibility()">
+                            <i class="fas fa-eye" id="pin-eye-icon"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -211,6 +216,48 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('carburante-personalizzato-group').style.display = 'block';
     }
 });
+
+// FUNZIONE TOGGLE PIN VISIBILITY
+function togglePinVisibility() {
+    const pinField = document.getElementById('pin-carburante-field');
+    const eyeIcon = document.getElementById('pin-eye-icon');
+    const container = document.querySelector('.pin-input-container');
+    
+    if (pinField.type === 'password') {
+        // MOSTRA PIN
+        pinField.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+        container.classList.add('pin-visible');
+        
+        // Feedback sonoro (se audio attivo)
+        if (window.MatrixFleet && window.MatrixFleet.playClickSound) {
+            window.MatrixFleet.playClickSound();
+        }
+        
+        // Auto-nascondi dopo 5 secondi per sicurezza
+        setTimeout(() => {
+            if (pinField.type === 'text') {
+                hidePinField();
+            }
+        }, 5000);
+        
+    } else {
+        // NASCONDI PIN
+        hidePinField();
+    }
+}
+
+function hidePinField() {
+    const pinField = document.getElementById('pin-carburante-field');
+    const eyeIcon = document.getElementById('pin-eye-icon');
+    const container = document.querySelector('.pin-input-container');
+    
+    pinField.type = 'password';
+    eyeIcon.classList.remove('fa-eye-slash');
+    eyeIcon.classList.add('fa-eye');
+    container.classList.remove('pin-visible');
+}
 </script>
 
 <style>
@@ -252,6 +299,82 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-top: 5px;
     color: #999;
     font-size: 0.85em;
+}
+
+/* STILI PER PIN TOGGLE */
+.pin-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.pin-input-container .form-input {
+    padding-right: 45px; /* Spazio per il bottone */
+}
+
+.pin-toggle-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--matrix-green);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+}
+
+.pin-toggle-btn:hover {
+    background: rgba(0, 255, 65, 0.1);
+    color: var(--matrix-green-light);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.pin-toggle-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.pin-toggle-btn i {
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+/* Effetto glow quando PIN è visibile */
+.pin-visible .form-input {
+    border-color: var(--matrix-warning);
+    box-shadow: 0 0 10px rgba(255, 165, 2, 0.3);
+}
+
+.pin-visible .pin-toggle-btn {
+    color: var(--matrix-warning);
+}
+
+.pin-visible .pin-toggle-btn:hover {
+    background: rgba(255, 165, 2, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pin-toggle-btn {
+        right: 5px;
+        width: 30px;
+        height: 30px;
+    }
+    
+    .pin-toggle-btn i {
+        font-size: 14px;
+    }
+    
+    .pin-input-container .form-input {
+        padding-right: 40px;
+    }
 }
 </style>
 {% endblock %}

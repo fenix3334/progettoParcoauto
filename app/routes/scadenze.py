@@ -38,7 +38,7 @@ def aggiungi_scadenza():
         )
         db.session.add(scadenza)
         db.session.commit()
-        flash('Scadenza aggiunta con successo!', 'success')
+        flash(f'Scadenza {scadenza.tipo_scadenza} per {scadenza.veicolo.targa} aggiunta con successo!', 'success')
         return redirect(url_for('scadenze.index_scadenze'))
     return render_template('scadenze/form.html', form=form, titolo='Aggiungi Scadenza')
 
@@ -49,7 +49,7 @@ def modifica_scadenza(id):
     if form.validate_on_submit():
         form.populate_obj(scadenza)
         db.session.commit()
-        flash('Scadenza modificata con successo!', 'success')
+        flash(f'Scadenza {scadenza.tipo_scadenza} per {scadenza.veicolo.targa} modificata con successo!', 'success')
         return redirect(url_for('scadenze.index_scadenze'))
     return render_template('scadenze/form.html', form=form, titolo='Modifica Scadenza')
 
@@ -58,5 +58,10 @@ def elimina_scadenza(id):
     scadenza = Scadenza.query.get_or_404(id)
     db.session.delete(scadenza)
     db.session.commit()
-    flash('Scadenza eliminata con successo!', 'success')
+    flash(f'Scadenza {scadenza.tipo_scadenza} per {scadenza.veicolo.targa} eliminata con successo!', 'success')
     return redirect(url_for('scadenze.index_scadenze'))
+
+@scadenze_bp.route('/dettaglio/<int:id>')
+def dettaglio_scadenza(id):
+    scadenza = Scadenza.query.get_or_404(id)
+    return render_template('scadenze/dettaglio.html', scadenza=scadenza)
