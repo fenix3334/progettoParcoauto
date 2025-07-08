@@ -9,8 +9,15 @@ class ScadenzaForm(FlaskForm):
                               choices=[('Revisione', 'Revisione'), ('Assicurazione', 'Assicurazione'),
                                      ('Bollo', 'Bollo'), ('Tagliando', 'Tagliando'),
                                      ('Controllo gas di scarico', 'Controllo gas di scarico'),
+                                     ('Consegna auto a noleggio', 'Consegna auto a noleggio'),
+                                     ('Riconsegna auto da noleggio', 'Riconsegna auto da noleggio'),
                                      ('Altro', 'Altro')],
                               validators=[DataRequired()])
+    
+    # NUOVO CAMPO PER SCADENZA PERSONALIZZATA
+    tipo_scadenza_personalizzato = StringField('Tipo Scadenza Personalizzato', 
+                                             validators=[Optional(), Length(max=100)])
+    
     data_scadenza = DateField('Data Scadenza', validators=[DataRequired()])
     costo = DecimalField('Costo (€)', validators=[Optional(), NumberRange(min=0)], places=2)
     stato = SelectField('Stato',

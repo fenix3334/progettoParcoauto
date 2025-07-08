@@ -14,6 +14,13 @@ class ManutenzioneForm(FlaskForm):
                                        ('Cambio olio', 'Cambio olio'), ('Freni', 'Freni'),
                                        ('Altro', 'Altro')],
                                 validators=[DataRequired()])
+    
+    # NUOVO CAMPO STATO
+    stato = SelectField('Stato',
+                       choices=[('Da Fare', 'Da Fare'), ('Fatto', 'Fatto')],
+                       default='Da Fare',
+                       validators=[DataRequired()])
+    
     descrizione = TextAreaField('Descrizione')
     costo = DecimalField('Costo (€)', validators=[Optional(), NumberRange(min=0)], places=2)
     numero_fattura = StringField('Numero Fattura', validators=[Length(max=50)])

@@ -64,6 +64,19 @@
                 {{ form.tipo_intervento(class="form-select") }}
             </div>
 
+            <!-- NUOVO CAMPO STATO -->
+            <div class="form-group">
+                {{ form.stato.label(class="form-label") }}
+                {{ form.stato(class="form-select") }}
+                {% if form.stato.errors %}
+                    <div class="form-errors">
+                        {% for error in form.stato.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
             <div class="form-group">
                 {{ form.costo.label(class="form-label") }}
                 {{ form.costo(class="form-input") }}

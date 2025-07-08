@@ -32,7 +32,7 @@
 
             <div class="form-group">
                 {{ form.tipo_scadenza.label(class="form-label") }}
-                {{ form.tipo_scadenza(class="form-select") }}
+                {{ form.tipo_scadenza(class="form-select", id="tipo-scadenza-select") }}
                 {% if form.tipo_scadenza.errors %}
                     <div class="form-errors">
                         {% for error in form.tipo_scadenza.errors %}
@@ -42,9 +42,22 @@
                 {% endif %}
             </div>
 
+            <!-- NUOVO CAMPO PERSONALIZZATO (nascosto inizialmente) -->
+            <div class="form-group" id="tipo-scadenza-personalizzato-group" style="display: none;">
+                {{ form.tipo_scadenza_personalizzato.label(class="form-label") }}
+                {{ form.tipo_scadenza_personalizzato(class="form-input", placeholder="Inserisci tipo scadenza personalizzato...") }}
+                {% if form.tipo_scadenza_personalizzato.errors %}
+                    <div class="form-errors">
+                        {% for error in form.tipo_scadenza_personalizzato.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
             <div class="form-group">
                 {{ form.data_scadenza.label(class="form-label") }}
-                {{ form.data_scadenza(class="form-input") }}
+                {{ form.data_scadenza(class="form-input", id="data_scadenza") }}
                 {% if form.data_scadenza.errors %}
                     <div class="form-errors">
                         {% for error in form.data_scadenza.errors %}
@@ -99,7 +112,29 @@
 
 {% block scripts %}
 <script>
-// Calcolo dinamico giorni alla scadenza
+// NUOVO: Mostra/nascondi campo tipo scadenza personalizzato
+document.getElementById('tipo-scadenza-select').addEventListener('change', function() {
+    const personalizzatoGroup = document.getElementById('tipo-scadenza-personalizzato-group');
+    if (this.value === 'Altro') {
+        personalizzatoGroup.style.display = 'block';
+        personalizzatoGroup.querySelector('input').required = true;
+    } else {
+        personalizzatoGroup.style.display = 'none';
+        personalizzatoGroup.querySelector('input').required = false;
+        personalizzatoGroup.querySelector('input').value = '';
+    }
+});
+
+// NUOVO: Inizializza lo stato al caricamento della pagina
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoScadenzaSelect = document.getElementById('tipo-scadenza-select');
+    if (tipoScadenzaSelect.value === 'Altro') {
+        document.getElementById('tipo-scadenza-personalizzato-group').style.display = 'block';
+        document.getElementById('tipo-scadenza-personalizzato-group').querySelector('input').required = true;
+    }
+});
+
+// ESISTENTE: Calcolo dinamico giorni alla scadenza (MANTENUTO IDENTICO)
 document.getElementById('data_scadenza').addEventListener('change', function() {
     const scadenzaDate = new Date(this.value);
     const today = new Date();

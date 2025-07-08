@@ -47,6 +47,7 @@ def add_missing_columns():
             
             # MANUTENZIONI
             ("manutenzioni", "nucleo", "VARCHAR(50) DEFAULT 'Via Capitel'"),
+            ("manutenzioni", "stato", "VARCHAR(20) DEFAULT 'Da Fare'"),
             
             # SCADENZE
             ("scadenze", "nucleo", "VARCHAR(50) DEFAULT 'Via Capitel'"),
@@ -86,6 +87,9 @@ def add_missing_columns():
         cursor.execute("UPDATE fornitori SET nucleo = 'Via Capitel' WHERE nucleo IS NULL")
         cursor.execute("UPDATE manutenzioni SET nucleo = 'Via Capitel' WHERE nucleo IS NULL")
         cursor.execute("UPDATE scadenze SET nucleo = 'Via Capitel' WHERE nucleo IS NULL")
+        
+        # Imposta stato predefinito per manutenzioni esistenti
+        cursor.execute("UPDATE manutenzioni SET stato = 'Da Fare' WHERE stato IS NULL")
         
         conn.commit()
         conn.close()
@@ -148,6 +152,7 @@ with app.app_context():
         print("   - 🚪 Logout automatico")
         print("   - 🔒 Protezione route con @login_required")
         print("   - 🔑 Cambio password (password personalizzate vengono mantenute)")
+        print("   - 🔧 Flag Fatto/Da Fare per manutenzioni")
         
     else:
         print("🆕 Primo avvio - Creazione nuovo database...")

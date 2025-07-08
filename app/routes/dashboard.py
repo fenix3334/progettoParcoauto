@@ -17,6 +17,7 @@ def index():
         'totale_fornitori': Fornitore.query.count(),
         'fornitori_attivi': Fornitore.query.filter_by(attivo=True).count(),
         'totale_manutenzioni': Manutenzione.query.count(),
+        'manutenzioni_da_fare': Manutenzione.query.filter_by(stato='Da Fare').count(),  # NUOVO
         'scadenze_urgenti': Scadenza.query.filter(
             Scadenza.data_scadenza <= func.date('now', '+30 days'),
             Scadenza.stato == 'Attiva'
@@ -29,12 +30,18 @@ def index():
         Scadenza.stato == 'Attiva'
     ).order_by(Scadenza.data_scadenza).limit(5).all()
     
-    # Ultime manutenzioni
-    ultime_manutenzioni = Manutenzione.query.order_by(
+    # NUOVO: Manutenzioni da fare
+    manutenzioni_da_fare = Manutenzione.query.filter_by(stato='Da Fare').order_by(
+        Manutenzione.data_intervento.asc()
+    ).limit(8).all()
+    
+    # Ultime manutenzioni completate
+    ultime_manutenzioni = Manutenzione.query.filter_by(stato='Fatto').order_by(
         Manutenzione.data_intervento.desc()
     ).limit(5).all()
     
     return render_template('dashboard.html', 
                          stats=stats,
                          scadenze_urgenti=scadenze_urgenti,
+                         manutenzioni_da_fare=manutenzioni_da_fare,  # NUOVO
                          ultime_manutenzioni=ultime_manutenzioni)

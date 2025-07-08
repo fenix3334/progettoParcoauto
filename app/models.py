@@ -125,6 +125,9 @@ class Manutenzione(db.Model):
     prossima_scadenza_km = db.Column(db.Integer)
     note = db.Column(db.Text)
     
+    # NUOVO CAMPO PER FLAG FATTO/DA FARE
+    stato = db.Column(db.String(20), default='Da Fare')
+    
     # NUOVO CAMPO PER NUCLEO
     nucleo = db.Column(db.String(50), default='Via Capitel')
     
