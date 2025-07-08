@@ -16,10 +16,24 @@ def clean_field(value):
 @login_required
 def index_manutenzioni():
     page = request.args.get('page', 1, type=int)
-    manutenzioni = Manutenzione.query.order_by(
+    filtro_stato = request.args.get('stato', 'tutto')  # NUOVO: Gestione filtro stato
+    
+    # NUOVO: Query con filtro stato
+    query = Manutenzione.query
+    
+    if filtro_stato == 'fatto':
+        query = query.filter(Manutenzione.stato == 'Fatto')
+    elif filtro_stato == 'da_fare':
+        query = query.filter(Manutenzione.stato == 'Da Fare')
+    # Se filtro_stato == 'tutto', non applichiamo filtri
+    
+    manutenzioni = query.order_by(
         Manutenzione.data_intervento.desc()
     ).paginate(page=page, per_page=10, error_out=False)
-    return render_template('manutenzioni/index.html', manutenzioni=manutenzioni)
+    
+    return render_template('manutenzioni/index.html', 
+                         manutenzioni=manutenzioni, 
+                         filtro_corrente=filtro_stato)  # NUOVO: Passa filtro corrente al template
 
 @manutenzioni_bp.route('/aggiungi', methods=['GET', 'POST'])
 @login_required

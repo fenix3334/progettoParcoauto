@@ -16,58 +16,135 @@
         </div>
     </div>
 
-    <div class="data-table-container">
-        <table class="data-table">
+    <!-- FILTRI STATO -->
+    <div class="filters-container">
+        <div class="filters-group">
+            <span class="filters-label">Filtra per stato:</span>
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='tutto') }}" 
+               class="filter-btn {% if filtro_corrente == 'tutto' %}active{% endif %}">
+                <i class="fas fa-list"></i> Tutto
+            </a>
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='fatto') }}" 
+               class="filter-btn {% if filtro_corrente == 'fatto' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Fatto
+            </a>
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='da_fare') }}" 
+               class="filter-btn {% if filtro_corrente == 'da_fare' %}active{% endif %}">
+                <i class="fas fa-clock"></i> Da Fare
+            </a>
+        </div>
+    </div>
+
+    <div class="maintenance-table-container">
+        <table class="maintenance-table">
             <thead>
                 <tr>
-                    <th>Data</th>
-                    <th>Veicolo</th>
-                    <th>Tipo Intervento</th>
-                    <th>KM</th>
-                    <th>Fornitore</th>
-                    <th>Costo</th>
-                    <th>Azioni</th>
+                    <th class="col-date">Data</th>
+                    <th class="col-vehicle">Veicolo</th>
+                    <th class="col-intervention">Tipo Intervento</th>
+                    <th class="col-km">KM</th>
+                    <th class="col-supplier">Fornitore</th>
+                    <th class="col-status">Stato</th>
+                    <th class="col-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>
                 {% for manutenzione in manutenzioni.items %}
-                <tr>
-                    <td class="highlight">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</td>
-                    <td>
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">{{ manutenzione.veicolo.targa }}</div>
-                            <div class="vehicle-model">{{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}</div>
+                <tr class="maintenance-row">
+                    <td class="col-date">
+                        <div class="date-info">
+                            <div class="date-main">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</div>
+                            <div class="date-day">{{ manutenzione.data_intervento.strftime('%A') }}</div>
                         </div>
                     </td>
-                    <td>
-                        <span class="badge badge-intervento">{{ manutenzione.tipo_intervento }}</span>
+                    <td class="col-vehicle">
+                        <div class="vehicle-info">
+                            <div class="vehicle-plate">{{ manutenzione.veicolo.targa }}</div>
+                            <div class="vehicle-details">
+                                <span class="vehicle-brand">{{ manutenzione.veicolo.marca }}</span>
+                                <span class="vehicle-model">{{ manutenzione.veicolo.modello }}</span>
+                            </div>
+                        </div>
                     </td>
-                    <td>{{ "{:,}".format(manutenzione.km_intervento) }} km</td>
-                    <td>{{ manutenzione.fornitore.ragione_sociale if manutenzione.fornitore else 'N/D' }}</td>
-                    <td>
-                        {% if manutenzione.costo %}
-                            <span class="cost-value">€{{ "%.2f"|format(manutenzione.costo) }}</span>
+                    <td class="col-intervention">
+                        <div class="intervention-info">
+                            <span class="intervention-badge intervention-{{ manutenzione.tipo_intervento|lower|replace(' ', '-')|replace('/', '-') }}">
+                                {{ manutenzione.tipo_intervento }}
+                            </span>
+                            {% if manutenzione.descrizione %}
+                            <div class="intervention-desc" title="{{ manutenzione.descrizione }}">
+                                {{ manutenzione.descrizione[:30] }}{% if manutenzione.descrizione|length > 30 %}...{% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="col-km">
+                        <div class="km-info">
+                            <span class="km-value">{{ "{:,}".format(manutenzione.km_intervento) }}</span>
+                            <span class="km-unit">km</span>
+                        </div>
+                    </td>
+                    <td class="col-supplier">
+                        {% if manutenzione.fornitore %}
+                            <div class="supplier-info" title="{{ manutenzione.fornitore.ragione_sociale }}">
+                                <div class="supplier-name">{{ manutenzione.fornitore.ragione_sociale }}</div>
+                                {% if manutenzione.numero_fattura %}
+                                <div class="supplier-invoice">Doc: {{ manutenzione.numero_fattura }}</div>
+                                {% endif %}
+                            </div>
                         {% else %}
                             <span class="text-muted">N/D</span>
                         {% endif %}
                     </td>
-                    <td class="actions">
-                        <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" class="btn-action" title="Visualizza">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn-action" title="Modifica">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="{{ url_for('manutenzioni.elimina_manutenzione', id=manutenzione.id) }}" class="btn-action delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questa manutenzione?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                    <td class="col-status">
+                        {% if manutenzione.stato == 'Fatto' %}
+                            <span class="status-badge status-done">
+                                <i class="fas fa-check-circle"></i> Fatto
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Da Fare
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" class="btn-action btn-view" title="Visualizza">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn-action btn-edit" title="Modifica">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('manutenzioni.elimina_manutenzione', id=manutenzione.id) }}" class="btn-action btn-delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questa manutenzione?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="empty-state">
-                        <i class="fas fa-tools"></i>
-                        <p>Nessuna manutenzione registrata</p>
+                    <td colspan="7" class="empty-state-maintenance">
+                        <div class="empty-content">
+                            <i class="fas fa-tools"></i>
+                            <h3>
+                                {% if filtro_corrente == 'fatto' %}
+                                    Nessuna manutenzione completata trovata
+                                {% elif filtro_corrente == 'da_fare' %}
+                                    Nessuna manutenzione da completare trovata
+                                {% else %}
+                                    Nessuna manutenzione registrata
+                                {% endif %}
+                            </h3>
+                            <p>
+                                {% if filtro_corrente == 'fatto' %}
+                                    Non ci sono manutenzioni completate al momento
+                                {% elif filtro_corrente == 'da_fare' %}
+                                    Tutte le manutenzioni sono state completate!
+                                {% else %}
+                                    Inizia aggiungendo la tua prima manutenzione
+                                {% endif %}
+                            </p>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -75,31 +152,550 @@
         </table>
     </div>
 
-    <!-- Paginazione -->
+    <!-- Paginazione Migliorata -->
     {% if manutenzioni.pages > 1 %}
-    <div class="pagination">
-        {% if manutenzioni.has_prev %}
-            <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num) }}" class="page-btn">
-                <i class="fas fa-chevron-left"></i>
-            </a>
-        {% endif %}
-        
-        {% for page_num in manutenzioni.iter_pages() %}
-            {% if page_num %}
-                {% if page_num != manutenzioni.page %}
-                    <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num) }}" class="page-btn">{{ page_num }}</a>
-                {% else %}
-                    <span class="page-btn active">{{ page_num }}</span>
-                {% endif %}
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if manutenzioni.has_prev %}
+                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num, stato=filtro_corrente) }}" class="pagination-link">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
             {% endif %}
-        {% endfor %}
-        
-        {% if manutenzioni.has_next %}
-            <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num) }}" class="page-btn">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        {% endif %}
+            
+            {% for page_num in manutenzioni.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != manutenzioni.page %}
+                        <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num, stato=filtro_corrente) }}" class="pagination-link">{{ page_num }}</a>
+                    {% else %}
+                        <span class="pagination-current">{{ page_num }}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="pagination-ellipsis">…</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if manutenzioni.has_next %}
+                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num, stato=filtro_corrente) }}" class="pagination-link">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 </div>
+
+<style>
+/* === STILI MIGLIORATI PER TABELLA MANUTENZIONI === */
+
+/* Filtri */
+.filters-container {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(0, 20, 0, 0.3);
+    border: 1px solid #00ff41;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.filters-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filters-label {
+    color: #00ff41;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff41;
+    text-decoration: none;
+    border: 1px solid #00ff41;
+    border-radius: 5px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-btn:hover {
+    background: rgba(0, 255, 65, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 255, 65, 0.2);
+}
+
+.filter-btn.active {
+    background: rgba(0, 255, 65, 0.2);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    font-weight: 600;
+}
+
+/* Tabella */
+.maintenance-table-container {
+    background: rgba(0, 20, 0, 0.3);
+    border: 1px solid #00ff41;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.1);
+}
+
+.maintenance-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+}
+
+/* Header della tabella */
+.maintenance-table thead {
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.15), rgba(0, 255, 65, 0.05));
+    border-bottom: 2px solid #00ff41;
+}
+
+.maintenance-table th {
+    padding: 15px 12px;
+    text-align: left;
+    color: #00ff41;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(0, 255, 65, 0.2);
+}
+
+.maintenance-table th:last-child {
+    border-right: none;
+}
+
+/* Larghezze colonne ottimizzate */
+.col-date { width: 12%; }
+.col-vehicle { width: 18%; }
+.col-intervention { width: 20%; }
+.col-km { width: 10%; }
+.col-supplier { width: 20%; }
+.col-status { width: 10%; }
+.col-actions { width: 10%; }
+
+/* Righe della tabella */
+.maintenance-row {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.maintenance-row:hover {
+    background: rgba(0, 255, 65, 0.05);
+    transform: scale(1.005);
+    box-shadow: 0 2px 10px rgba(0, 255, 65, 0.15);
+}
+
+.maintenance-table td {
+    padding: 12px;
+    vertical-align: middle;
+    border-right: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.maintenance-table td:last-child {
+    border-right: none;
+}
+
+/* === STILI SPECIFICI PER COLONNE === */
+
+/* Colonna Data */
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-main {
+    font-family: 'Orbitron', monospace;
+    font-weight: 600;
+    color: #00ff41;
+    font-size: 14px;
+}
+
+.date-day {
+    font-size: 10px;
+    color: #999;
+    text-transform: capitalize;
+}
+
+/* Colonna Veicolo */
+.vehicle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.vehicle-plate {
+    font-family: 'Orbitron', monospace;
+    font-weight: bold;
+    font-size: 13px;
+    color: #00ff41;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 3px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    text-align: center;
+    white-space: nowrap;
+    max-width: fit-content;
+}
+
+.vehicle-details {
+    display: flex;
+    gap: 5px;
+}
+
+.vehicle-brand {
+    font-weight: 500;
+    color: #00ff41;
+    font-size: 12px;
+}
+
+.vehicle-model {
+    font-weight: 400;
+    color: #ccc;
+    font-size: 12px;
+}
+
+/* Colonna Tipo Intervento */
+.intervention-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.intervention-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    max-width: fit-content;
+    white-space: nowrap;
+}
+
+.intervention-tagliando {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.intervention-revisione {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.intervention-riparazione {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.intervention-sostituzione-pneumatici {
+    background: rgba(102, 16, 242, 0.2);
+    color: #6610f2;
+    border: 1px solid rgba(102, 16, 242, 0.4);
+}
+
+.intervention-cambio-olio {
+    background: rgba(255, 159, 64, 0.2);
+    color: #ff9f40;
+    border: 1px solid rgba(255, 159, 64, 0.4);
+}
+
+.intervention-freni {
+    background: rgba(54, 162, 235, 0.2);
+    color: #36a2eb;
+    border: 1px solid rgba(54, 162, 235, 0.4);
+}
+
+.intervention-altro {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.intervention-desc {
+    font-size: 10px;
+    color: #999;
+    font-style: italic;
+    cursor: help;
+}
+
+/* Colonna KM */
+.km-info {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.km-value {
+    font-weight: 600;
+    color: #00ff41;
+    font-size: 14px;
+}
+
+.km-unit {
+    font-size: 10px;
+    color: #999;
+}
+
+/* Colonna Fornitore */
+.supplier-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: 100%;
+}
+
+.supplier-name {
+    font-weight: 500;
+    color: #00ff41;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.supplier-invoice {
+    font-size: 10px;
+    color: #999;
+    font-family: 'Courier New', monospace;
+}
+
+/* Tooltip per fornitori con nomi lunghi */
+.supplier-info:hover .supplier-name {
+    position: relative;
+    z-index: 100;
+}
+
+.supplier-info:hover::after {
+    content: attr(title);
+    position: absolute;
+    top: -30px;
+    left: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00ff41;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #00ff41;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 101;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    max-width: 200px;
+}
+
+/* Colonna Stato */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    max-width: fit-content;
+}
+
+.status-done {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.status-pending {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.status-badge i {
+    font-size: 9px;
+}
+
+/* Colonna Azioni */
+.action-buttons {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.btn-action {
+    padding: 6px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 11px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-view {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    border-color: rgba(0, 255, 65, 0.3);
+}
+
+.btn-view:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-edit {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.btn-edit:hover {
+    background: rgba(255, 193, 7, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+.btn-delete:hover {
+    background: rgba(220, 53, 69, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.empty-state-maintenance {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-content i {
+    font-size: 48px;
+    color: #00ff41;
+    margin-bottom: 16px;
+}
+
+.empty-content h3 {
+    color: #00ff41;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.empty-content p {
+    color: #999;
+    font-size: 14px;
+}
+
+/* Testo disabilitato */
+.text-muted {
+    color: #666;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Paginazione migliorata */
+.pagination-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pagination-link, .pagination-current, .pagination-ellipsis {
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.pagination-link {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.pagination-link:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+.pagination-current {
+    background: #00ff41;
+    color: #000;
+    font-weight: 600;
+}
+
+.pagination-ellipsis {
+    color: #999;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+    .col-intervention { width: 18%; }
+    .col-supplier { width: 18%; }
+    .supplier-name { max-width: 120px; }
+}
+
+@media (max-width: 968px) {
+    .maintenance-table th, .maintenance-table td {
+        padding: 8px 6px;
+    }
+    
+    .col-date { width: 10%; }
+    .col-supplier { display: none; }
+    .col-intervention { width: 25%; }
+    .col-actions { width: 15%; }
+    
+    .filters-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 3px;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-date { display: none; }
+    .col-vehicle { width: 25%; }
+    .col-intervention { width: 30%; }
+    .col-km { width: 15%; }
+    .col-status { width: 15%; }
+    .col-actions { width: 15%; }
+    
+    .maintenance-table th, .maintenance-table td {
+        padding: 10px 8px;
+    }
+    
+    .date-day { display: none; }
+}
+</style>
 {% endblock %}

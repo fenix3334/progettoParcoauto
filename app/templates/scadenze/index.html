@@ -10,95 +10,160 @@
             GESTIONE SCADENZE
         </h1>
         <div class="page-actions">
-            <div class="filter-buttons">
-                <a href="{{ url_for('scadenze.index_scadenze', filtro='tutte') }}" 
-                   class="btn {% if filtro == 'tutte' %}btn-primary{% else %}btn-secondary{% endif %}">
-                    <i class="fas fa-list"></i> Tutte
-                </a>
-                <a href="{{ url_for('scadenze.index_scadenze', filtro='urgenti') }}" 
-                   class="btn {% if filtro == 'urgenti' %}btn-primary{% else %}btn-secondary{% endif %}">
-                    <i class="fas fa-exclamation-triangle"></i> Urgenti
-                </a>
-                <a href="{{ url_for('scadenze.index_scadenze', filtro='attive') }}" 
-                   class="btn {% if filtro == 'attive' %}btn-primary{% else %}btn-secondary{% endif %}">
-                    <i class="fas fa-check-circle"></i> Attive
-                </a>
-            </div>
             <a href="{{ url_for('scadenze.aggiungi_scadenza') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Nuova Scadenza
             </a>
         </div>
     </div>
 
-    <div class="data-table-container">
-        <table class="data-table">
+    <!-- FILTRI STATO -->
+    <div class="filters-container">
+        <div class="filters-group">
+            <span class="filters-label">Filtra scadenze:</span>
+            <a href="{{ url_for('scadenze.index_scadenze', filtro='tutte') }}" 
+               class="filter-btn {% if filtro == 'tutte' %}active{% endif %}">
+                <i class="fas fa-list"></i> Tutte
+            </a>
+            <a href="{{ url_for('scadenze.index_scadenze', filtro='urgenti') }}" 
+               class="filter-btn {% if filtro == 'urgenti' %}active{% endif %}">
+                <i class="fas fa-exclamation-triangle"></i> Urgenti
+            </a>
+            <a href="{{ url_for('scadenze.index_scadenze', filtro='attive') }}" 
+               class="filter-btn {% if filtro == 'attive' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Attive
+            </a>
+        </div>
+    </div>
+
+    <div class="deadlines-table-container">
+        <table class="deadlines-table">
             <thead>
                 <tr>
-                    <th>Tipo Scadenza</th>
-                    <th>Veicolo</th>
-                    <th>Data Scadenza</th>
-                    <th>Giorni Rimanenti</th>
-                    <th>Costo</th>
-                    <th>Stato</th>
-                    <th>Azioni</th>
+                    <th class="col-type">Tipo Scadenza</th>
+                    <th class="col-vehicle">Veicolo</th>
+                    <th class="col-date">Data Scadenza</th>
+                    <th class="col-remaining">Giorni Rimanenti</th>
+                    <th class="col-cost">Costo</th>
+                    <th class="col-status">Stato</th>
+                    <th class="col-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>
                 {% for scadenza in scadenze.items %}
-                <tr class="{% if scadenza.giorni_alla_scadenza <= 0 %}row-expired{% elif scadenza.giorni_alla_scadenza <= 7 %}row-critical{% elif scadenza.giorni_alla_scadenza <= 30 %}row-warning{% endif %}">
-                    <td>
-                        <div class="scadenza-type">
-                            <i class="fas fa-{% if scadenza.tipo_scadenza == 'Revisione' %}search{% elif scadenza.tipo_scadenza == 'Assicurazione' %}shield-alt{% elif scadenza.tipo_scadenza == 'Bollo' %}receipt{% else %}clock{% endif %}"></i>
-                            {{ scadenza.tipo_scadenza }}
+                <tr class="deadline-row {% if scadenza.giorni_alla_scadenza <= 0 %}row-expired{% elif scadenza.giorni_alla_scadenza <= 7 %}row-critical{% elif scadenza.giorni_alla_scadenza <= 30 %}row-warning{% endif %}">
+                    <td class="col-type">
+                        <div class="deadline-type">
+                            <div class="type-icon">
+                                <i class="fas fa-{% if scadenza.tipo_scadenza == 'Revisione' %}search{% elif scadenza.tipo_scadenza == 'Assicurazione' %}shield-alt{% elif scadenza.tipo_scadenza == 'Bollo' %}receipt{% elif scadenza.tipo_scadenza == 'Tagliando' %}tools{% elif 'noleggio' in scadenza.tipo_scadenza.lower() %}handshake{% else %}clock{% endif %}"></i>
+                            </div>
+                            <div class="type-info">
+                                <div class="type-name">{{ scadenza.tipo_scadenza }}</div>
+                                {% if scadenza.notifica_giorni %}
+                                <div class="type-notification">Notifica: {{ scadenza.notifica_giorni }}gg</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </td>
-                    <td>
+                    <td class="col-vehicle">
                         <div class="vehicle-info">
                             <div class="vehicle-plate">{{ scadenza.veicolo.targa }}</div>
-                            <div class="vehicle-model">{{ scadenza.veicolo.marca }} {{ scadenza.veicolo.modello }}</div>
+                            <div class="vehicle-details">
+                                <span class="vehicle-brand">{{ scadenza.veicolo.marca }}</span>
+                                <span class="vehicle-model">{{ scadenza.veicolo.modello }}</span>
+                            </div>
                         </div>
                     </td>
-                    <td class="highlight">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</td>
-                    <td>
+                    <td class="col-date">
+                        <div class="date-info">
+                            <div class="date-main">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</div>
+                            <div class="date-day">{{ scadenza.data_scadenza.strftime('%A') }}</div>
+                        </div>
+                    </td>
+                    <td class="col-remaining">
                         {% if scadenza.giorni_alla_scadenza <= 0 %}
-                            <span class="days-badge expired">SCADUTA</span>
+                            <span class="days-badge expired">
+                                <i class="fas fa-times-circle"></i>
+                                SCADUTA
+                            </span>
                         {% elif scadenza.giorni_alla_scadenza <= 7 %}
-                            <span class="days-badge critical">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                            <span class="days-badge critical">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ scadenza.giorni_alla_scadenza }} giorni
+                            </span>
                         {% elif scadenza.giorni_alla_scadenza <= 30 %}
-                            <span class="days-badge warning">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                            <span class="days-badge warning">
+                                <i class="fas fa-exclamation"></i>
+                                {{ scadenza.giorni_alla_scadenza }} giorni
+                            </span>
                         {% else %}
-                            <span class="days-badge ok">{{ scadenza.giorni_alla_scadenza }} giorni</span>
+                            <span class="days-badge ok">
+                                <i class="fas fa-check"></i>
+                                {{ scadenza.giorni_alla_scadenza }} giorni
+                            </span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td class="col-cost">
                         {% if scadenza.costo %}
-                            <span class="cost-value">€{{ "%.2f"|format(scadenza.costo) }}</span>
+                            <div class="cost-info">
+                                <span class="cost-value">€{{ "%.2f"|format(scadenza.costo) }}</span>
+                            </div>
                         {% else %}
                             <span class="text-muted">N/D</span>
                         {% endif %}
                     </td>
-                    <td>
-                        <span class="status-badge status-{{ scadenza.stato.lower() }}">
-                            {{ scadenza.stato }}
-                        </span>
+                    <td class="col-status">
+                        {% if scadenza.stato == 'Attiva' %}
+                            <span class="status-badge status-active">
+                                <i class="fas fa-check-circle"></i> Attiva
+                            </span>
+                        {% elif scadenza.stato == 'Completata' %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-double"></i> Completata
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-inactive">
+                                <i class="fas fa-pause-circle"></i> Inattiva
+                            </span>
+                        {% endif %}
                     </td>
-                    <td class="actions">
-                        <a href="{{ url_for('scadenze.dettaglio_scadenza', id=scadenza.id) }}" class="btn-action" title="Visualizza">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ url_for('scadenze.modifica_scadenza', id=scadenza.id) }}" class="btn-action" title="Modifica">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="{{ url_for('scadenze.elimina_scadenza', id=scadenza.id) }}" class="btn-action delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questa scadenza?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <a href="{{ url_for('scadenze.dettaglio_scadenza', id=scadenza.id) }}" class="btn-action btn-view" title="Visualizza">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('scadenze.modifica_scadenza', id=scadenza.id) }}" class="btn-action btn-edit" title="Modifica">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('scadenze.elimina_scadenza', id=scadenza.id) }}" class="btn-action btn-delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questa scadenza?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="empty-state">
-                        <i class="fas fa-clock"></i>
-                        <p>Nessuna scadenza {% if filtro != 'tutte' %}{{ filtro }}{% endif %} trovata</p>
+                    <td colspan="7" class="empty-state-deadlines">
+                        <div class="empty-content">
+                            <i class="fas fa-calendar-check"></i>
+                            <h3>
+                                {% if filtro == 'urgenti' %}
+                                    Nessuna scadenza urgente trovata
+                                {% elif filtro == 'attive' %}
+                                    Nessuna scadenza attiva trovata
+                                {% else %}
+                                    Nessuna scadenza registrata
+                                {% endif %}
+                            </h3>
+                            <p>
+                                {% if filtro == 'urgenti' %}
+                                    Non ci sono scadenze urgenti al momento
+                                {% elif filtro == 'attive' %}
+                                    Non ci sono scadenze attive al momento
+                                {% else %}
+                                    Inizia aggiungendo la tua prima scadenza
+                                {% endif %}
+                            </p>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -106,56 +171,557 @@
         </table>
     </div>
 
-    <!-- Alert scadenze critiche -->
-    {% set scadenze_critiche = scadenze.items|selectattr('giorni_alla_scadenza', '<=', 7)|list %}
-    {% if scadenze_critiche %}
-    <div class="alert-panel critical">
-        <div class="alert-header">
-            <h3><i class="fas fa-exclamation-triangle"></i> Attenzione: Scadenze Critiche!</h3>
-        </div>
-        <div class="alert-content">
-            <p>Ci sono {{ scadenze_critiche|length }} scadenze che richiedono attenzione immediata:</p>
-            <ul class="critical-list">
-                {% for scadenza in scadenze_critiche %}
-                <li>
-                    <strong>{{ scadenza.veicolo.targa }}</strong> - {{ scadenza.tipo_scadenza }}
-                    {% if scadenza.giorni_alla_scadenza <= 0 %}
-                        <span class="text-danger">(SCADUTA)</span>
-                    {% else %}
-                        <span class="text-warning">({{ scadenza.giorni_alla_scadenza }} giorni)</span>
-                    {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Paginazione -->
+    <!-- Paginazione Migliorata -->
     {% if scadenze.pages > 1 %}
-    <div class="pagination">
-        {% if scadenze.has_prev %}
-            <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.prev_num, filtro=filtro) }}" class="page-btn">
-                <i class="fas fa-chevron-left"></i>
-            </a>
-        {% endif %}
-        
-        {% for page_num in scadenze.iter_pages() %}
-            {% if page_num %}
-                {% if page_num != scadenze.page %}
-                    <a href="{{ url_for('scadenze.index_scadenze', page=page_num, filtro=filtro) }}" class="page-btn">{{ page_num }}</a>
-                {% else %}
-                    <span class="page-btn active">{{ page_num }}</span>
-                {% endif %}
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if scadenze.has_prev %}
+                <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.prev_num, filtro=filtro) }}" class="pagination-link">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
             {% endif %}
-        {% endfor %}
-        
-        {% if scadenze.has_next %}
-            <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.next_num, filtro=filtro) }}" class="page-btn">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        {% endif %}
+            
+            {% for page_num in scadenze.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != scadenze.page %}
+                        <a href="{{ url_for('scadenze.index_scadenze', page=page_num, filtro=filtro) }}" class="pagination-link">{{ page_num }}</a>
+                    {% else %}
+                        <span class="pagination-current">{{ page_num }}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="pagination-ellipsis">…</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if scadenze.has_next %}
+                <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.next_num, filtro=filtro) }}" class="pagination-link">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 </div>
+
+<style>
+/* === STILI MIGLIORATI PER TABELLA SCADENZE === */
+
+/* Filtri */
+.filters-container {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(0, 20, 0, 0.3);
+    border: 1px solid #00ff41;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.filters-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filters-label {
+    color: #00ff41;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff41;
+    text-decoration: none;
+    border: 1px solid #00ff41;
+    border-radius: 5px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-btn:hover {
+    background: rgba(0, 255, 65, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 255, 65, 0.2);
+}
+
+.filter-btn.active {
+    background: rgba(0, 255, 65, 0.2);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    font-weight: 600;
+}
+
+/* Tabella */
+.deadlines-table-container {
+    background: rgba(0, 20, 0, 0.3);
+    border: 1px solid #00ff41;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.1);
+}
+
+.deadlines-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+}
+
+/* Header della tabella */
+.deadlines-table thead {
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.15), rgba(0, 255, 65, 0.05));
+    border-bottom: 2px solid #00ff41;
+}
+
+.deadlines-table th {
+    padding: 15px 12px;
+    text-align: left;
+    color: #00ff41;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(0, 255, 65, 0.2);
+}
+
+.deadlines-table th:last-child {
+    border-right: none;
+}
+
+/* Larghezze colonne ottimizzate */
+.col-type { width: 20%; }
+.col-vehicle { width: 18%; }
+.col-date { width: 12%; }
+.col-remaining { width: 15%; }
+.col-cost { width: 10%; }
+.col-status { width: 10%; }
+.col-actions { width: 15%; }
+
+/* Righe della tabella */
+.deadline-row {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.deadline-row:hover {
+    background: rgba(0, 255, 65, 0.05);
+    transform: scale(1.005);
+    box-shadow: 0 2px 10px rgba(0, 255, 65, 0.15);
+}
+
+/* Evidenziazione urgenza */
+.row-expired {
+    background: rgba(220, 53, 69, 0.05);
+    border-left: 4px solid #dc3545;
+}
+
+.row-critical {
+    background: rgba(255, 193, 7, 0.05);
+    border-left: 4px solid #ffc107;
+}
+
+.row-warning {
+    background: rgba(255, 159, 64, 0.05);
+    border-left: 4px solid #ff9f40;
+}
+
+.deadlines-table td {
+    padding: 12px;
+    vertical-align: middle;
+    border-right: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.deadlines-table td:last-child {
+    border-right: none;
+}
+
+/* === STILI SPECIFICI PER COLONNE === */
+
+/* Colonna Tipo Scadenza */
+.deadline-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.type-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.type-icon i {
+    color: #00ff41;
+    font-size: 14px;
+}
+
+.type-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.type-name {
+    font-weight: 600;
+    color: #00ff41;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.type-notification {
+    font-size: 10px;
+    color: #999;
+}
+
+/* Colonna Veicolo */
+.vehicle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.vehicle-plate {
+    font-family: 'Orbitron', monospace;
+    font-weight: bold;
+    font-size: 13px;
+    color: #00ff41;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 3px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    text-align: center;
+    white-space: nowrap;
+    max-width: fit-content;
+}
+
+.vehicle-details {
+    display: flex;
+    gap: 5px;
+}
+
+.vehicle-brand {
+    font-weight: 500;
+    color: #00ff41;
+    font-size: 12px;
+}
+
+.vehicle-model {
+    font-weight: 400;
+    color: #ccc;
+    font-size: 12px;
+}
+
+/* Colonna Data */
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-main {
+    font-family: 'Orbitron', monospace;
+    font-weight: 600;
+    color: #00ff41;
+    font-size: 14px;
+}
+
+.date-day {
+    font-size: 10px;
+    color: #999;
+    text-transform: capitalize;
+}
+
+/* Colonna Giorni Rimanenti */
+.days-badge {
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    max-width: fit-content;
+}
+
+.days-badge.expired {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.days-badge.critical {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid #ffc107;
+}
+
+.days-badge.warning {
+    background: rgba(255, 159, 64, 0.2);
+    color: #ff9f40;
+    border: 1px solid #ff9f40;
+}
+
+.days-badge.ok {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid #28a745;
+}
+
+.days-badge i {
+    font-size: 10px;
+}
+
+/* Colonna Costo */
+.cost-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cost-value {
+    font-weight: 600;
+    color: #00ff41;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Colonna Stato */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    max-width: fit-content;
+}
+
+.status-active {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.status-completed {
+    background: rgba(0, 255, 65, 0.2);
+    color: #00ff41;
+    border: 1px solid rgba(0, 255, 65, 0.4);
+}
+
+.status-inactive {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.status-badge i {
+    font-size: 9px;
+}
+
+/* Colonna Azioni */
+.action-buttons {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.btn-action {
+    padding: 6px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 11px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-view {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    border-color: rgba(0, 255, 65, 0.3);
+}
+
+.btn-view:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-edit {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.btn-edit:hover {
+    background: rgba(255, 193, 7, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+.btn-delete:hover {
+    background: rgba(220, 53, 69, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.empty-state-deadlines {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-content i {
+    font-size: 48px;
+    color: #00ff41;
+    margin-bottom: 16px;
+}
+
+.empty-content h3 {
+    color: #00ff41;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.empty-content p {
+    color: #999;
+    font-size: 14px;
+}
+
+/* Testo disabilitato */
+.text-muted {
+    color: #666;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Paginazione migliorata */
+.pagination-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pagination-link, .pagination-current, .pagination-ellipsis {
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.pagination-link {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.pagination-link:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+.pagination-current {
+    background: #00ff41;
+    color: #000;
+    font-weight: 600;
+}
+
+.pagination-ellipsis {
+    color: #999;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+    .col-type { width: 18%; }
+    .col-remaining { width: 13%; }
+    .col-cost { display: none; }
+    .col-actions { width: 12%; }
+    
+    .type-name { max-width: 120px; }
+}
+
+@media (max-width: 968px) {
+    .deadlines-table th, .deadlines-table td {
+        padding: 8px 6px;
+    }
+    
+    .col-date { display: none; }
+    .col-type { width: 25%; }
+    .col-vehicle { width: 20%; }
+    .col-remaining { width: 20%; }
+    .col-status { width: 15%; }
+    .col-actions { width: 20%; }
+    
+    .filters-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .deadline-type {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .type-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 3px;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-status { display: none; }
+    .col-type { width: 30%; }
+    .col-vehicle { width: 25%; }
+    .col-remaining { width: 25%; }
+    .col-actions { width: 20%; }
+    
+    .deadlines-table th, .deadlines-table td {
+        padding: 10px 8px;
+    }
+    
+    .type-name { max-width: 100px; }
+}
+</style>
 {% endblock %}
