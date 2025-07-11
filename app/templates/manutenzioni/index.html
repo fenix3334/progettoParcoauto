@@ -16,66 +16,87 @@
         </div>
     </div>
 
+    <!-- INFO NUCLEO -->
+    {% if nucleo_info %}
+    <div class="nucleo-info-banner">
+        <div class="nucleo-badge-info">
+            {% if nucleo_info.is_admin %}
+                <i class="fas fa-crown"></i>
+                <span>Visualizzazione: {{ nucleo_info.nome }}</span>
+            {% else %}
+                <i class="fas fa-building"></i>
+                <span>Nucleo: {{ nucleo_info.nome }}</span>
+            {% endif %}
+        </div>
+        <div class="nucleo-stats-info">
+            <span class="stat-info">
+                <i class="fas fa-tools"></i>
+                {{ totale_manutenzioni }} totali
+            </span>
+            <span class="stat-info warning">
+                <i class="fas fa-clock"></i>
+                {{ manutenzioni_da_fare }} da fare
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- FILTRI STATO -->
     <div class="filters-container">
         <div class="filters-group">
             <span class="filters-label">Filtra per stato:</span>
-            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='tutto') }}" 
-               class="filter-btn {% if filtro_corrente == 'tutto' %}active{% endif %}">
-                <i class="fas fa-list"></i> Tutto
+            <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" 
+               class="filter-btn {% if not stato_filter or stato_filter == '' %}active{% endif %}">
+                <i class="fas fa-list"></i> Tutte
             </a>
-            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='fatto') }}" 
-               class="filter-btn {% if filtro_corrente == 'fatto' %}active{% endif %}">
-                <i class="fas fa-check-circle"></i> Fatto
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='Fatto') }}" 
+               class="filter-btn {% if stato_filter == 'Fatto' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Completate
             </a>
-            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='da_fare') }}" 
-               class="filter-btn {% if filtro_corrente == 'da_fare' %}active{% endif %}">
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='Da Fare') }}" 
+               class="filter-btn {% if stato_filter == 'Da Fare' %}active{% endif %}">
                 <i class="fas fa-clock"></i> Da Fare
             </a>
         </div>
     </div>
 
+    <!-- TABELLA MANUTENZIONI -->
     <div class="maintenance-table-container">
         <table class="maintenance-table">
             <thead>
                 <tr>
-                    <th class="col-date">Data</th>
                     <th class="col-vehicle">Veicolo</th>
-                    <th class="col-intervention">Tipo Intervento</th>
+                    <th class="col-type">Tipo Intervento</th>
+                    <th class="col-date">Data</th>
                     <th class="col-km">KM</th>
                     <th class="col-supplier">Fornitore</th>
+                    <th class="col-cost">Costo</th>
                     <th class="col-status">Stato</th>
                     <th class="col-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>
                 {% for manutenzione in manutenzioni.items %}
-                <tr class="maintenance-row">
+                <tr class="maintenance-row {% if manutenzione.stato == 'Da Fare' %}row-pending{% else %}row-completed{% endif %}">
+                    <td class="col-vehicle">
+                        <div class="vehicle-info">
+                            <div class="vehicle-plate">{{ manutenzione.veicolo.targa }}</div>
+                            <div class="vehicle-model">{{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}</div>
+                        </div>
+                    </td>
+                    <td class="col-type">
+                        <div class="maintenance-type">
+                            <i class="fas fa-wrench"></i>
+                            <span>{{ manutenzione.tipo_intervento }}</span>
+                        </div>
+                        {% if manutenzione.descrizione %}
+                        <div class="maintenance-desc">{{ manutenzione.descrizione[:50] }}{% if manutenzione.descrizione|length > 50 %}...{% endif %}</div>
+                        {% endif %}
+                    </td>
                     <td class="col-date">
                         <div class="date-info">
                             <div class="date-main">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</div>
                             <div class="date-day">{{ manutenzione.data_intervento.strftime('%A') }}</div>
-                        </div>
-                    </td>
-                    <td class="col-vehicle">
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">{{ manutenzione.veicolo.targa }}</div>
-                            <div class="vehicle-details">
-                                <span class="vehicle-brand">{{ manutenzione.veicolo.marca }}</span>
-                                <span class="vehicle-model">{{ manutenzione.veicolo.modello }}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="col-intervention">
-                        <div class="intervention-info">
-                            <span class="intervention-badge intervention-{{ manutenzione.tipo_intervento|lower|replace(' ', '-')|replace('/', '-') }}">
-                                {{ manutenzione.tipo_intervento }}
-                            </span>
-                            {% if manutenzione.descrizione %}
-                            <div class="intervention-desc" title="{{ manutenzione.descrizione }}">
-                                {{ manutenzione.descrizione[:30] }}{% if manutenzione.descrizione|length > 30 %}...{% endif %}
-                            </div>
-                            {% endif %}
                         </div>
                     </td>
                     <td class="col-km">
@@ -86,20 +107,29 @@
                     </td>
                     <td class="col-supplier">
                         {% if manutenzione.fornitore %}
-                            <div class="supplier-info" title="{{ manutenzione.fornitore.ragione_sociale }}">
+                            <div class="supplier-info">
                                 <div class="supplier-name">{{ manutenzione.fornitore.ragione_sociale }}</div>
                                 {% if manutenzione.numero_fattura %}
-                                <div class="supplier-invoice">Doc: {{ manutenzione.numero_fattura }}</div>
+                                <div class="invoice-number">Fatt: {{ manutenzione.numero_fattura }}</div>
                                 {% endif %}
                             </div>
                         {% else %}
                             <span class="text-muted">N/D</span>
                         {% endif %}
                     </td>
+                    <td class="col-cost">
+                        {% if manutenzione.costo %}
+                            <div class="cost-info">
+                                <span class="cost-value">{{ manutenzione.costo_formattato }}</span>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
                     <td class="col-status">
                         {% if manutenzione.stato == 'Fatto' %}
                             <span class="status-badge status-done">
-                                <i class="fas fa-check-circle"></i> Fatto
+                                <i class="fas fa-check-circle"></i> Completata
                             </span>
                         {% else %}
                             <span class="status-badge status-pending">
@@ -109,13 +139,17 @@
                     </td>
                     <td class="col-actions">
                         <div class="action-buttons">
-                            <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" class="btn-action btn-view" title="Visualizza">
+                            <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" 
+                               class="btn-action btn-primary" title="Visualizza dettagli">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn-action btn-edit" title="Modifica">
+                            <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" 
+                               class="btn-action btn-warning" title="Modifica">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{{ url_for('manutenzioni.elimina_manutenzione', id=manutenzione.id) }}" class="btn-action btn-delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questa manutenzione?')">
+                            <a href="{{ url_for('manutenzioni.elimina_manutenzione', id=manutenzione.id) }}" 
+                               class="btn-action btn-danger" title="Elimina"
+                               onclick="return confirm('Sei sicuro di voler eliminare questa manutenzione?')">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -123,25 +157,25 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="empty-state-maintenance">
+                    <td colspan="8" class="empty-state-maintenance">
                         <div class="empty-content">
                             <i class="fas fa-tools"></i>
                             <h3>
-                                {% if filtro_corrente == 'fatto' %}
+                                {% if stato_filter == 'Fatto' %}
                                     Nessuna manutenzione completata trovata
-                                {% elif filtro_corrente == 'da_fare' %}
+                                {% elif stato_filter == 'Da Fare' %}
                                     Nessuna manutenzione da completare trovata
                                 {% else %}
                                     Nessuna manutenzione registrata
                                 {% endif %}
                             </h3>
                             <p>
-                                {% if filtro_corrente == 'fatto' %}
-                                    Non ci sono manutenzioni completate al momento
-                                {% elif filtro_corrente == 'da_fare' %}
-                                    Tutte le manutenzioni sono state completate!
+                                {% if stato_filter == 'Fatto' %}
+                                    Non ci sono manutenzioni completate per questo nucleo
+                                {% elif stato_filter == 'Da Fare' %}
+                                    Tutte le manutenzioni sono state completate per questo nucleo!
                                 {% else %}
-                                    Inizia aggiungendo la tua prima manutenzione
+                                    Inizia aggiungendo la tua prima manutenzione per questo nucleo
                                 {% endif %}
                             </p>
                         </div>
@@ -152,12 +186,12 @@
         </table>
     </div>
 
-    <!-- Paginazione Migliorata -->
+    <!-- PAGINAZIONE -->
     {% if manutenzioni.pages > 1 %}
     <div class="pagination-container">
         <div class="pagination">
             {% if manutenzioni.has_prev %}
-                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num, stato=filtro_corrente) }}" class="pagination-link">
+                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num, stato=stato_filter) }}" class="pagination-link">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             {% endif %}
@@ -165,17 +199,17 @@
             {% for page_num in manutenzioni.iter_pages() %}
                 {% if page_num %}
                     {% if page_num != manutenzioni.page %}
-                        <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num, stato=filtro_corrente) }}" class="pagination-link">{{ page_num }}</a>
+                        <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num, stato=stato_filter) }}" class="pagination-link">{{ page_num }}</a>
                     {% else %}
-                        <span class="pagination-current">{{ page_num }}</span>
+                        <span class="pagination-link active">{{ page_num }}</span>
                     {% endif %}
                 {% else %}
-                    <span class="pagination-ellipsis">…</span>
+                    <span class="pagination-link disabled">…</span>
                 {% endif %}
             {% endfor %}
             
             {% if manutenzioni.has_next %}
-                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num, stato=filtro_corrente) }}" class="pagination-link">
+                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num, stato=stato_filter) }}" class="pagination-link">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             {% endif %}
@@ -184,15 +218,74 @@
     {% endif %}
 </div>
 
+<!-- CSS MIGLIORATO PER MANUTENZIONI -->
 <style>
-/* === STILI MIGLIORATI PER TABELLA MANUTENZIONI === */
+.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+}
 
-/* Filtri */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--matrix-light-gray);
+}
+
+.page-title {
+    color: var(--matrix-green);
+    font-family: 'Orbitron', monospace;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+/* BANNER INFO NUCLEO */
+.nucleo-info-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 255, 65, 0.05);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.nucleo-badge-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--matrix-green);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.nucleo-stats-info {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-info {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--matrix-text);
+}
+
+.stat-info.warning {
+    color: var(--matrix-warning);
+}
+
+/* FILTRI */
 .filters-container {
-    margin: 20px 0;
-    padding: 15px;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
     background: rgba(0, 20, 0, 0.3);
-    border: 1px solid #00ff41;
+    border: 1px solid var(--matrix-green);
     border-radius: 8px;
     backdrop-filter: blur(5px);
 }
@@ -200,502 +293,340 @@
 .filters-group {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 1rem;
     flex-wrap: wrap;
 }
 
 .filters-label {
-    color: #00ff41;
+    color: var(--matrix-green);
     font-weight: 600;
-    font-size: 14px;
-    margin-right: 10px;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
 }
 
 .filter-btn {
-    padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.8);
-    color: #00ff41;
-    text-decoration: none;
-    border: 1px solid #00ff41;
-    border-radius: 5px;
-    font-size: 13px;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--matrix-text);
+    text-decoration: none;
+    border-radius: 6px;
+    border: 1px solid var(--matrix-light-gray);
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
 }
 
 .filter-btn:hover {
+    border-color: var(--matrix-green);
+    color: var(--matrix-green);
     background: rgba(0, 255, 65, 0.1);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 255, 65, 0.2);
 }
 
 .filter-btn.active {
-    background: rgba(0, 255, 65, 0.2);
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-    font-weight: 600;
+    background: var(--matrix-green);
+    color: var(--matrix-black);
+    border-color: var(--matrix-green);
 }
 
-/* Tabella */
+/* TABELLA */
 .maintenance-table-container {
-    background: rgba(0, 20, 0, 0.3);
-    border: 1px solid #00ff41;
-    border-radius: 12px;
+    background: var(--matrix-dark);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.1);
+    border: 1px solid var(--matrix-light-gray);
+    margin-bottom: 1.5rem;
 }
 
 .maintenance-table {
     width: 100%;
     border-collapse: collapse;
-    background: transparent;
-}
-
-/* Header della tabella */
-.maintenance-table thead {
-    background: linear-gradient(135deg, rgba(0, 255, 65, 0.15), rgba(0, 255, 65, 0.05));
-    border-bottom: 2px solid #00ff41;
 }
 
 .maintenance-table th {
-    padding: 15px 12px;
+    background: linear-gradient(135deg, var(--matrix-gray), var(--matrix-light-gray));
+    color: var(--matrix-green);
+    padding: 1rem;
     text-align: left;
-    color: #00ff41;
-    font-weight: 600;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-right: 1px solid rgba(0, 255, 65, 0.2);
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-bottom: 2px solid var(--matrix-green);
 }
 
-.maintenance-table th:last-child {
-    border-right: none;
-}
-
-/* Larghezze colonne ottimizzate */
-.col-date { width: 12%; }
-.col-vehicle { width: 18%; }
-.col-intervention { width: 20%; }
-.col-km { width: 10%; }
-.col-supplier { width: 20%; }
-.col-status { width: 10%; }
-.col-actions { width: 10%; }
-
-/* Righe della tabella */
-.maintenance-row {
-    transition: all 0.3s ease;
-    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+.maintenance-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--matrix-light-gray);
+    color: var(--matrix-text);
+    vertical-align: top;
 }
 
 .maintenance-row:hover {
     background: rgba(0, 255, 65, 0.05);
-    transform: scale(1.005);
-    box-shadow: 0 2px 10px rgba(0, 255, 65, 0.15);
 }
 
-.maintenance-table td {
-    padding: 12px;
-    vertical-align: middle;
-    border-right: 1px solid rgba(0, 255, 65, 0.1);
+.maintenance-row.row-pending {
+    border-left: 3px solid var(--matrix-warning);
 }
 
-.maintenance-table td:last-child {
-    border-right: none;
+.maintenance-row.row-completed {
+    border-left: 3px solid var(--matrix-success);
 }
 
-/* === STILI SPECIFICI PER COLONNE === */
-
-/* Colonna Data */
-.date-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.date-main {
-    font-family: 'Orbitron', monospace;
-    font-weight: 600;
-    color: #00ff41;
-    font-size: 14px;
-}
-
-.date-day {
-    font-size: 10px;
-    color: #999;
-    text-transform: capitalize;
-}
-
-/* Colonna Veicolo */
+/* CELLE SPECIFICHE */
 .vehicle-info {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 0.2rem;
 }
 
 .vehicle-plate {
+    font-weight: 600;
+    color: var(--matrix-green);
     font-family: 'Orbitron', monospace;
-    font-weight: bold;
-    font-size: 13px;
-    color: #00ff41;
-    background: rgba(0, 255, 65, 0.1);
-    padding: 3px 6px;
-    border-radius: 4px;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    text-align: center;
-    white-space: nowrap;
-    max-width: fit-content;
-}
-
-.vehicle-details {
-    display: flex;
-    gap: 5px;
-}
-
-.vehicle-brand {
-    font-weight: 500;
-    color: #00ff41;
-    font-size: 12px;
+    font-size: 0.9rem;
 }
 
 .vehicle-model {
-    font-weight: 400;
-    color: #ccc;
-    font-size: 12px;
+    font-size: 0.75rem;
+    color: var(--matrix-text-dim);
 }
 
-/* Colonna Tipo Intervento */
-.intervention-info {
+.maintenance-type {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+}
+
+.maintenance-desc {
+    font-size: 0.75rem;
+    color: var(--matrix-text-dim);
+    font-style: italic;
+}
+
+.date-info {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 0.1rem;
 }
 
-.intervention-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
+.date-main {
     font-weight: 600;
-    text-transform: uppercase;
-    display: inline-block;
-    max-width: fit-content;
-    white-space: nowrap;
+    color: var(--matrix-text);
 }
 
-.intervention-tagliando {
-    background: rgba(40, 167, 69, 0.2);
-    color: #28a745;
-    border: 1px solid rgba(40, 167, 69, 0.4);
+.date-day {
+    font-size: 0.7rem;
+    color: var(--matrix-text-dim);
+    text-transform: capitalize;
 }
 
-.intervention-revisione {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.4);
-}
-
-.intervention-riparazione {
-    background: rgba(220, 53, 69, 0.2);
-    color: #dc3545;
-    border: 1px solid rgba(220, 53, 69, 0.4);
-}
-
-.intervention-sostituzione-pneumatici {
-    background: rgba(102, 16, 242, 0.2);
-    color: #6610f2;
-    border: 1px solid rgba(102, 16, 242, 0.4);
-}
-
-.intervention-cambio-olio {
-    background: rgba(255, 159, 64, 0.2);
-    color: #ff9f40;
-    border: 1px solid rgba(255, 159, 64, 0.4);
-}
-
-.intervention-freni {
-    background: rgba(54, 162, 235, 0.2);
-    color: #36a2eb;
-    border: 1px solid rgba(54, 162, 235, 0.4);
-}
-
-.intervention-altro {
-    background: rgba(108, 117, 125, 0.2);
-    color: #6c757d;
-    border: 1px solid rgba(108, 117, 125, 0.4);
-}
-
-.intervention-desc {
-    font-size: 10px;
-    color: #999;
-    font-style: italic;
-    cursor: help;
-}
-
-/* Colonna KM */
 .km-info {
     display: flex;
     align-items: baseline;
-    gap: 3px;
+    gap: 0.2rem;
 }
 
 .km-value {
+    font-family: 'Orbitron', monospace;
     font-weight: 600;
-    color: #00ff41;
-    font-size: 14px;
+    color: var(--matrix-green);
 }
 
 .km-unit {
-    font-size: 10px;
-    color: #999;
+    font-size: 0.7rem;
+    color: var(--matrix-text-dim);
 }
 
-/* Colonna Fornitore */
 .supplier-info {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    max-width: 100%;
+    gap: 0.2rem;
 }
 
 .supplier-name {
     font-weight: 500;
-    color: #00ff41;
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 150px;
+    color: var(--matrix-text);
 }
 
-.supplier-invoice {
-    font-size: 10px;
-    color: #999;
-    font-family: 'Courier New', monospace;
+.invoice-number {
+    font-size: 0.7rem;
+    color: var(--matrix-text-dim);
+    font-family: 'Orbitron', monospace;
 }
 
-/* Tooltip per fornitori con nomi lunghi */
-.supplier-info:hover .supplier-name {
-    position: relative;
-    z-index: 100;
-}
-
-.supplier-info:hover::after {
-    content: attr(title);
-    position: absolute;
-    top: -30px;
-    left: 0;
-    background: rgba(0, 0, 0, 0.9);
-    color: #00ff41;
-    padding: 6px 10px;
-    border-radius: 4px;
-    border: 1px solid #00ff41;
-    font-size: 11px;
-    white-space: nowrap;
-    z-index: 101;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    max-width: 200px;
-}
-
-/* Colonna Stato */
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 10px;
+.cost-value {
+    font-family: 'Orbitron', monospace;
     font-weight: 600;
-    text-transform: uppercase;
-    display: flex;
+    color: var(--matrix-green);
+}
+
+.status-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-    max-width: fit-content;
+    gap: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
-.status-done {
-    background: rgba(40, 167, 69, 0.2);
-    color: #28a745;
-    border: 1px solid rgba(40, 167, 69, 0.4);
+.status-badge.status-done {
+    background: rgba(46, 213, 115, 0.2);
+    color: var(--matrix-success);
+    border: 1px solid var(--matrix-success);
 }
 
-.status-pending {
+.status-badge.status-pending {
     background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.4);
+    color: var(--matrix-warning);
+    border: 1px solid var(--matrix-warning);
 }
 
-.status-badge i {
-    font-size: 9px;
-}
-
-/* Colonna Azioni */
 .action-buttons {
     display: flex;
-    gap: 4px;
-    justify-content: center;
+    gap: 0.3rem;
 }
 
 .btn-action {
-    padding: 6px 8px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 11px;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
 }
 
-.btn-view {
-    background: rgba(0, 255, 65, 0.1);
-    color: #00ff41;
-    border-color: rgba(0, 255, 65, 0.3);
+.btn-action.btn-primary {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border: 1px solid #007bff;
 }
 
-.btn-view:hover {
-    background: rgba(0, 255, 65, 0.2);
-    transform: translateY(-1px);
-}
-
-.btn-edit {
+.btn-action.btn-warning {
     background: rgba(255, 193, 7, 0.1);
     color: #ffc107;
-    border-color: rgba(255, 193, 7, 0.3);
+    border: 1px solid #ffc107;
 }
 
-.btn-edit:hover {
-    background: rgba(255, 193, 7, 0.2);
-    transform: translateY(-1px);
-}
-
-.btn-delete {
+.btn-action.btn-danger {
     background: rgba(220, 53, 69, 0.1);
     color: #dc3545;
-    border-color: rgba(220, 53, 69, 0.3);
+    border: 1px solid #dc3545;
 }
 
-.btn-delete:hover {
-    background: rgba(220, 53, 69, 0.2);
-    transform: translateY(-1px);
+.btn-action:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
 }
 
-/* Empty State */
+.text-muted {
+    color: var(--matrix-text-dim);
+    font-style: italic;
+}
+
+/* EMPTY STATE */
 .empty-state-maintenance {
-    padding: 60px 20px;
     text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-content {
+    color: var(--matrix-text-dim);
 }
 
 .empty-content i {
-    font-size: 48px;
-    color: #00ff41;
-    margin-bottom: 16px;
+    font-size: 3rem;
+    color: var(--matrix-green);
+    margin-bottom: 1rem;
 }
 
 .empty-content h3 {
-    color: #00ff41;
-    margin-bottom: 8px;
-    font-size: 18px;
+    color: var(--matrix-text);
+    margin-bottom: 0.5rem;
 }
 
-.empty-content p {
-    color: #999;
-    font-size: 14px;
-}
-
-/* Testo disabilitato */
-.text-muted {
-    color: #666;
-    font-style: italic;
-    font-size: 12px;
-}
-
-/* Paginazione migliorata */
+/* PAGINAZIONE */
 .pagination-container {
-    margin-top: 30px;
     display: flex;
     justify-content: center;
+    margin-top: 1rem;
 }
 
 .pagination {
     display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.pagination-link, .pagination-current, .pagination-ellipsis {
-    padding: 8px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    gap: 0.3rem;
 }
 
 .pagination-link {
-    background: rgba(0, 255, 65, 0.1);
-    color: #00ff41;
-    border: 1px solid rgba(0, 255, 65, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 35px;
+    height: 35px;
+    padding: 0.5rem;
+    background: var(--matrix-dark);
+    color: var(--matrix-text);
+    text-decoration: none;
+    border: 1px solid var(--matrix-light-gray);
+    border-radius: 6px;
+    transition: all 0.3s ease;
 }
 
 .pagination-link:hover {
-    background: rgba(0, 255, 65, 0.2);
-    transform: translateY(-1px);
+    background: var(--matrix-green);
+    color: var(--matrix-black);
+    border-color: var(--matrix-green);
 }
 
-.pagination-current {
-    background: #00ff41;
-    color: #000;
-    font-weight: 600;
+.pagination-link.active {
+    background: var(--matrix-green);
+    color: var(--matrix-black);
+    border-color: var(--matrix-green);
 }
 
-.pagination-ellipsis {
-    color: #999;
+.pagination-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 1200px) {
-    .col-intervention { width: 18%; }
-    .col-supplier { width: 18%; }
-    .supplier-name { max-width: 120px; }
-}
-
-@media (max-width: 968px) {
-    .maintenance-table th, .maintenance-table td {
-        padding: 8px 6px;
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
     }
     
-    .col-date { width: 10%; }
-    .col-supplier { display: none; }
-    .col-intervention { width: 25%; }
-    .col-actions { width: 15%; }
+    .nucleo-info-banner {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    
+    .nucleo-stats-info {
+        justify-content: center;
+    }
     
     .filters-group {
-        flex-direction: column;
-        align-items: flex-start;
+        justify-content: center;
     }
     
-    .filter-btn {
-        width: 100%;
-        justify-content: center;
+    .maintenance-table-container {
+        overflow-x: auto;
     }
     
     .action-buttons {
         flex-direction: column;
-        gap: 3px;
     }
-}
-
-@media (max-width: 768px) {
-    .col-date { display: none; }
-    .col-vehicle { width: 25%; }
-    .col-intervention { width: 30%; }
-    .col-km { width: 15%; }
-    .col-status { width: 15%; }
-    .col-actions { width: 15%; }
-    
-    .maintenance-table th, .maintenance-table td {
-        padding: 10px 8px;
-    }
-    
-    .date-day { display: none; }
 }
 </style>
+
 {% endblock %}

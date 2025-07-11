@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask_login import login_required, current_user
 from app.models import Fornitore
-from app.forms import FornitoreForm
+from app.forms.fornitori import FornitoreForm
 from app.extensions import db
 
 fornitori_bp = Blueprint('fornitori', __name__)
@@ -11,27 +12,98 @@ def clean_field(value):
         return value.strip()
     return None
 
+def get_fornitori_query():
+    """Restituisce query fornitori filtrata per nucleo utente o selezione admin"""
+    from flask import session
+    
+    if current_user.ruolo == 'admin':
+        # Admin può filtrare per nucleo specifico o vedere tutti
+        filtro_admin = session.get('admin_nucleo_filter', 'tutti')
+        
+        if filtro_admin == 'tutti':
+            # Admin vede tutti i fornitori
+            return Fornitore.query
+        else:
+            # Admin con filtro specifico
+            return Fornitore.query.filter_by(nucleo=filtro_admin)
+    else:
+        # User normale vede solo fornitori del suo nucleo
+        return Fornitore.query.filter_by(nucleo=current_user.nucleo)
+
+def validate_fornitore_access(fornitore_id):
+    """Verifica che l'utente possa accedere al fornitore"""
+    fornitore = Fornitore.query.get_or_404(fornitore_id)
+    
+    if current_user.ruolo == 'admin':
+        return fornitore
+    
+    if fornitore.nucleo != current_user.nucleo:
+        abort(403)  # Accesso negato
+    
+    return fornitore
+
 @fornitori_bp.route('/')
+@login_required
 def index_fornitori():
-    # Filtro per nucleo se necessario
-    nucleo_filter = request.args.get('nucleo')
-    query = Fornitore.query
-    
-    if nucleo_filter:
-        query = query.filter_by(nucleo=nucleo_filter)
-    
-    # Ordinamento per ragione sociale
-    query = query.order_by(Fornitore.ragione_sociale)
-    
     page = request.args.get('page', 1, type=int)
-    fornitori = query.paginate(
-        page=page, per_page=10, error_out=False
+    
+    # Query filtrata per nucleo
+    fornitori_query = get_fornitori_query()
+    
+    # Filtri aggiuntivi
+    attivo_filter = request.args.get('attivo')
+    settore_filter = request.args.get('settore')
+    
+    if attivo_filter == 'attivi':
+        fornitori_query = fornitori_query.filter_by(attivo=True)
+    elif attivo_filter == 'inattivi':
+        fornitori_query = fornitori_query.filter_by(attivo=False)
+    
+    if settore_filter:
+        # Cerca il settore in tutti i campi settore
+        from sqlalchemy import or_
+        fornitori_query = fornitori_query.filter(
+            or_(
+                Fornitore.settore.contains(settore_filter),
+                Fornitore.settore_2.contains(settore_filter),
+                Fornitore.settore_3.contains(settore_filter),
+                Fornitore.settore_personalizzato.contains(settore_filter)
+            )
+        )
+    
+    # Ordinamento e paginazione
+    fornitori = fornitori_query.order_by(Fornitore.ragione_sociale).paginate(
+        page=page,
+        per_page=10,
+        error_out=False
     )
-    return render_template('fornitori/index.html', fornitori=fornitori)
+    
+    # Informazioni nucleo per l'interfaccia
+    from flask import session
+    nucleo_corrente = session.get('admin_nucleo_filter', 'tutti') if current_user.ruolo == 'admin' else current_user.nucleo
+    nucleo_info = {
+        'nome': nucleo_corrente if nucleo_corrente != 'tutti' else 'TUTTI I NUCLEI',
+        'is_admin': current_user.ruolo == 'admin',
+        'username': current_user.username
+    }
+    
+    # Conta per filtri
+    totale_fornitori = get_fornitori_query().count()
+    fornitori_attivi = get_fornitori_query().filter_by(attivo=True).count()
+    
+    return render_template('fornitori/index.html', 
+                         fornitori=fornitori,
+                         nucleo_info=nucleo_info,
+                         totale_fornitori=totale_fornitori,
+                         fornitori_attivi=fornitori_attivi,
+                         attivo_filter=attivo_filter,
+                         settore_filter=settore_filter)
 
 @fornitori_bp.route('/aggiungi', methods=['GET', 'POST'])
+@login_required
 def aggiungi_fornitore():
     form = FornitoreForm()
+    
     if form.validate_on_submit():
         try:
             fornitore = Fornitore(
@@ -62,25 +134,40 @@ def aggiungi_fornitore():
                 settore_3=clean_field(form.settore_3.data),
                 settore_personalizzato=clean_field(form.settore_personalizzato.data),
                 
-                nucleo=form.nucleo.data,
                 note=clean_field(form.note.data),
                 attivo=form.attivo.data
             )
             
+            # IMPORTANTE: Imposta automaticamente il nucleo
+            from flask import session
+            if current_user.ruolo == 'admin':
+                filtro_admin = session.get('admin_nucleo_filter', 'tutti')
+                if filtro_admin != 'tutti':
+                    fornitore.nucleo = filtro_admin
+                else:
+                    fornitore.nucleo = form.nucleo.data if hasattr(form, 'nucleo') else 'Via Capitel'
+            else:
+                # User normale: nucleo automatico
+                fornitore.nucleo = current_user.nucleo
+            
             db.session.add(fornitore)
             db.session.commit()
-            flash(f'Fornitore {fornitore.ragione_sociale} aggiunto con successo!', 'success')
+            
+            flash(f'Fornitore {fornitore.ragione_sociale} aggiunto con successo al nucleo {fornitore.nucleo}!', 'success')
             return redirect(url_for('fornitori.index_fornitori'))
             
         except Exception as e:
             db.session.rollback()
             flash(f'Errore durante il salvataggio: {str(e)}', 'error')
-            
+    
     return render_template('fornitori/form.html', form=form, titolo='Aggiungi Fornitore')
 
 @fornitori_bp.route('/modifica/<int:id>', methods=['GET', 'POST'])
+@login_required
 def modifica_fornitore(id):
-    fornitore = Fornitore.query.get_or_404(id)
+    # Verifica accesso e ottieni fornitore
+    fornitore = validate_fornitore_access(id)
+    
     form = FornitoreForm(obj=fornitore)
     
     if form.validate_on_submit():
@@ -112,9 +199,11 @@ def modifica_fornitore(id):
             fornitore.settore_3 = clean_field(form.settore_3.data)
             fornitore.settore_personalizzato = clean_field(form.settore_personalizzato.data)
             
-            fornitore.nucleo = form.nucleo.data
             fornitore.note = clean_field(form.note.data)
             fornitore.attivo = form.attivo.data
+            
+            # SICUREZZA: Solo admin può cambiare nucleo (se implementiamo campo nella form)
+            # Per ora il nucleo rimane invariato
             
             db.session.commit()
             flash(f'Fornitore {fornitore.ragione_sociale} modificato con successo!', 'success')
@@ -124,35 +213,64 @@ def modifica_fornitore(id):
             db.session.rollback()
             flash(f'Errore durante la modifica: {str(e)}', 'error')
             
-    return render_template('fornitori/form.html', form=form, titolo='Modifica Fornitore')
+    return render_template('fornitori/form.html', form=form, titolo=f'Modifica Fornitore {fornitore.ragione_sociale}')
 
 @fornitori_bp.route('/dettagli/<int:id>')
+@login_required
 def dettagli_fornitore(id):
-    fornitore = Fornitore.query.get_or_404(id)
-    return render_template('fornitori/dettagli.html', fornitore=fornitore)
+    # Verifica accesso e ottieni fornitore
+    fornitore = validate_fornitore_access(id)
+    
+    # Ottieni manutenzioni associate (filtrate per sicurezza)
+    from app.models import Manutenzione
+    from sqlalchemy import and_
+    
+    if current_user.ruolo == 'admin':
+        from flask import session
+        filtro_admin = session.get('admin_nucleo_filter', 'tutti')
+        if filtro_admin != 'tutti':
+            manutenzioni = Manutenzione.query.filter(
+                and_(
+                    Manutenzione.fornitore_id == fornitore.id,
+                    Manutenzione.nucleo == filtro_admin
+                )
+            ).order_by(Manutenzione.data_intervento.desc()).limit(10).all()
+        else:
+            manutenzioni = fornitore.manutenzioni[:10]
+    else:
+        manutenzioni = Manutenzione.query.filter(
+            and_(
+                Manutenzione.fornitore_id == fornitore.id,
+                Manutenzione.nucleo == current_user.nucleo
+            )
+        ).order_by(Manutenzione.data_intervento.desc()).limit(10).all()
+    
+    return render_template('fornitori/dettagli.html', 
+                         fornitore=fornitore,
+                         manutenzioni=manutenzioni)
 
-@fornitori_bp.route('/elimina/<int:id>')
+@fornitori_bp.route('/elimina/<int:id>', methods=['POST'])
+@login_required
 def elimina_fornitore(id):
-    fornitore = Fornitore.query.get_or_404(id)
+    # Verifica accesso e ottieni fornitore
+    fornitore = validate_fornitore_access(id)
     
     try:
         # Controlla se ci sono manutenzioni associate
         if fornitore.manutenzioni:
             flash(f'Impossibile eliminare {fornitore.ragione_sociale}: ci sono {len(fornitore.manutenzioni)} manutenzioni associate a questo fornitore.', 'error')
-            return redirect(url_for('fornitori.index_fornitori'))
+            return redirect(url_for('fornitori.dettagli_fornitore', id=id))
         
-        # Controlla se ci sono veicoli noleggio associati
-        if fornitore.veicoli_noleggio:
-            flash(f'Impossibile eliminare {fornitore.ragione_sociale}: ci sono {len(fornitore.veicoli_noleggio)} veicoli noleggio associati a questo fornitore.', 'error')
-            return redirect(url_for('fornitori.index_fornitori'))
+        ragione_sociale = fornitore.ragione_sociale
+        nucleo = fornitore.nucleo
         
-        ragione_sociale = fornitore.ragione_sociale  # Salva il nome prima di eliminare
         db.session.delete(fornitore)
         db.session.commit()
-        flash(f'Fornitore {ragione_sociale} eliminato con successo!', 'success')
+        
+        flash(f'Fornitore {ragione_sociale} eliminato con successo dal nucleo {nucleo}!', 'success')
+        return redirect(url_for('fornitori.index_fornitori'))
         
     except Exception as e:
         db.session.rollback()
         flash(f'Errore durante l\'eliminazione: {str(e)}', 'error')
-        
-    return redirect(url_for('fornitori.index_fornitori'))
+        return redirect(url_for('fornitori.dettagli_fornitore', id=id))

@@ -3,646 +3,654 @@
 {% block title %}Dashboard - Matrix Fleet Manager{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <div class="dashboard-header">
-        <h1 class="page-title">
-            <i class="fas fa-tachometer-alt"></i>
-            DASHBOARD SISTEMA
-        </h1>
-        <div class="system-status">
-            <span class="status-indicator active"></span>
-            <span>Sistema Operativo</span>
+<div class="dashboard-elegant">
+    
+    <!-- HEADER COMPATTO -->
+    <div class="dashboard-header-compact">
+        <div class="header-main">
+            <div class="title-section">
+                <h1 class="dashboard-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    MATRIX FLEET DASHBOARD
+                </h1>
+                <p class="dashboard-subtitle">Centro di controllo parco auto</p>
+            </div>
+            
+            <!-- INFO NUCLEO COMPATTA -->
+            <div class="nucleo-compact">
+                {% if nucleo_info.is_admin %}
+                    <div class="admin-badge">
+                        <i class="fas fa-crown"></i>
+                        <span>ADMIN</span>
+                    </div>
+                    <div class="nucleo-display">{{ nucleo_info.visualizza }}</div>
+                    
+                    <!-- SELETTORE ADMIN COMPATTO -->
+                    {% if admin_selector %}
+                    <form method="POST" action="{{ url_for('admin.cambia_nucleo') }}" class="nucleo-selector-compact">
+                        <input type="hidden" name="next" value="{{ request.url }}">
+                        <select name="nucleo_admin" onchange="this.form.submit()" class="nucleo-select-compact">
+                            {% for value, label in admin_selector %}
+                            <option value="{{ value }}" {% if value == nucleo_info.filtro_attivo %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    {% endif %}
+                {% else %}
+                    <div class="user-badge">
+                        <i class="fas fa-building"></i>
+                        <span>{{ nucleo_info.nome }}</span>
+                    </div>
+                {% endif %}
+                
+                <div class="user-info">
+                    <i class="fas fa-user"></i>
+                    <span>{{ nucleo_info.username }}</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
+    <!-- STATISTICHE PRINCIPALI - LAYOUT COMPATTO -->
+    <div class="stats-compact-grid">
+        <div class="stat-card-compact veicoli">
+            <div class="stat-icon-compact">
                 <i class="fas fa-car"></i>
             </div>
-            <div class="stat-content">
-                <div class="stat-number">{{ stats.veicoli_attivi }}</div>
-                <div class="stat-label">Veicoli Attivi</div>
-                <div class="stat-sublabel">su {{ stats.totale_veicoli }} totali</div>
+            <div class="stat-content-compact">
+                <div class="stat-number-compact">{{ stats.totale_veicoli }}</div>
+                <div class="stat-label-compact">Veicoli</div>
+                <div class="stat-detail-compact">{{ stats.veicoli_attivi }} attivi</div>
             </div>
-            <div class="stat-trend up">
-                <i class="fas fa-arrow-up"></i>
-            </div>
+            <a href="{{ url_for('veicoli.index_veicoli') }}" class="stat-action-compact">
+                <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
 
-        <!-- CARD MIGLIORATA: Manutenzioni Da Fare -->
-        <div class="stat-card priority">
-            <div class="stat-icon">
-                <i class="fas fa-wrench"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-number">{{ stats.manutenzioni_da_fare }}</div>
-                <div class="stat-label">Manutenzioni Da Fare</div>
-                <div class="stat-sublabel">lavori in sospeso</div>
-            </div>
-            <div class="stat-trend alert">
-                <i class="fas fa-exclamation"></i>
-            </div>
-        </div>
-
-        <div class="stat-card warning">
-            <div class="stat-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-number">{{ stats.scadenze_urgenti }}</div>
-                <div class="stat-label">Scadenze Urgenti</div>
-                <div class="stat-sublabel">entro 30 giorni</div>
-            </div>
-            <div class="stat-trend down">
-                <i class="fas fa-arrow-down"></i>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">
+        <div class="stat-card-compact fornitori">
+            <div class="stat-icon-compact">
                 <i class="fas fa-building"></i>
             </div>
-            <div class="stat-content">
-                <div class="stat-number">{{ stats.fornitori_attivi }}</div>
-                <div class="stat-label">Fornitori Attivi</div>
-                <div class="stat-sublabel">su {{ stats.totale_fornitori }} totali</div>
+            <div class="stat-content-compact">
+                <div class="stat-number-compact">{{ stats.totale_fornitori }}</div>
+                <div class="stat-label-compact">Fornitori</div>
+                <div class="stat-detail-compact">{{ stats.fornitori_attivi }} attivi</div>
             </div>
-            <div class="stat-trend stable">
-                <i class="fas fa-minus"></i>
+            <a href="{{ url_for('fornitori.index_fornitori') }}" class="stat-action-compact">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="stat-card-compact manutenzioni">
+            <div class="stat-icon-compact">
+                <i class="fas fa-tools"></i>
             </div>
+            <div class="stat-content-compact">
+                <div class="stat-number-compact">{{ stats.manutenzioni_da_fare }}</div>
+                <div class="stat-label-compact">Da Fare</div>
+                <div class="stat-detail-compact">di {{ stats.totale_manutenzioni }} totali</div>
+            </div>
+            <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" class="stat-action-compact">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="stat-card-compact scadenze">
+            <div class="stat-icon-compact">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content-compact">
+                <div class="stat-number-compact">{{ stats.scadenze_urgenti }}</div>
+                <div class="stat-label-compact">Urgenti</div>
+                <div class="stat-detail-compact">prossimi 30gg</div>
+            </div>
+            <a href="{{ url_for('scadenze.index_scadenze') }}" class="stat-action-compact">
+                <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
     </div>
 
-    <!-- Pannelli Principali MIGLIORATI -->
-    <div class="dashboard-grid">
-        <!-- PANNELLO MIGLIORATO: Manutenzioni Da Fare -->
-        <div class="dashboard-panel priority-panel wide-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-wrench"></i> Manutenzioni Da Fare</h3>
-                <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='da_fare') }}" class="panel-link">
-                    Visualizza Tutte <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-            <div class="panel-content">
-                {% if manutenzioni_da_fare %}
-                    <div class="maintenance-grid">
-                        {% for manutenzione in manutenzioni_da_fare %}
-                        <div class="maintenance-card">
-                            <div class="maintenance-header">
-                                <div class="vehicle-plate-large">{{ manutenzione.veicolo.targa }}</div>
-                                <div class="maintenance-date">
-                                    <i class="fas fa-calendar"></i>
-                                    {{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}
-                                </div>
-                            </div>
-                            <div class="maintenance-body">
-                                <div class="maintenance-type-large">{{ manutenzione.tipo_intervento }}</div>
-                                <div class="vehicle-info-large">
-                                    <span class="vehicle-brand">{{ manutenzione.veicolo.marca }}</span>
-                                    <span class="vehicle-model">{{ manutenzione.veicolo.modello }}</span>
-                                </div>
-                                {% if manutenzione.fornitore %}
-                                <div class="maintenance-supplier">
-                                    <i class="fas fa-building"></i>
-                                    {{ manutenzione.fornitore.ragione_sociale }}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="maintenance-actions">
-                                <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" class="btn-maintenance-action">
-                                    <i class="fas fa-eye"></i> Visualizza
-                                </a>
-                                <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn-maintenance-action">
-                                    <i class="fas fa-edit"></i> Modifica
-                                </a>
-                            </div>
-                        </div>
-                        {% endfor %}
+    <!-- PANNELLI OPERATIVI - LAYOUT A 2 COLONNE -->
+    <div class="operational-panels">
+        
+        <!-- COLONNA SINISTRA -->
+        <div class="panel-column">
+            
+            <!-- MANUTENZIONI DA FARE -->
+            {% if manutenzioni_da_fare %}
+            <div class="panel-compact manutenzioni-panel">
+                <div class="panel-header-compact">
+                    <div class="panel-title-compact">
+                        <i class="fas fa-wrench"></i>
+                        <span>Manutenzioni Da Fare</span>
+                        <div class="panel-count-compact">{{ manutenzioni_da_fare|length }}</div>
                     </div>
-                {% else %}
-                    <div class="empty-state-large">
+                    <a href="{{ url_for('manutenzioni.index_manutenzioni') }}?stato=da_fare" class="panel-link-compact">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                <div class="panel-content-compact">
+                    {% for manutenzione in manutenzioni_da_fare[:5] %}
+                    <div class="item-compact">
+                        <div class="item-main-compact">
+                            <div class="item-plate-compact">{{ manutenzione.veicolo.targa }}</div>
+                            <div class="item-desc-compact">{{ manutenzione.tipo_intervento }}</div>
+                        </div>
+                        <div class="item-date-compact">{{ manutenzione.data_intervento.strftime('%d/%m') }}</div>
+                        <div class="item-actions-compact">
+                            <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" class="action-btn-compact">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if manutenzioni_da_fare|length > 5 %}
+                    <div class="panel-more-compact">
+                        <a href="{{ url_for('manutenzioni.index_manutenzioni') }}?stato=da_fare">
+                            Vedi altre {{ manutenzioni_da_fare|length - 5 }} manutenzioni
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- PANORAMICA NUCLEI (SOLO ADMIN CON TUTTI) -->
+            {% if nucleo_info.is_admin and nuclei_info %}
+            <div class="panel-compact nuclei-panel">
+                <div class="panel-header-compact">
+                    <div class="panel-title-compact">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Panoramica Nuclei</span>
+                    </div>
+                </div>
+                <div class="panel-content-compact">
+                    {% for nucleo in nuclei_info %}
+                    <div class="nucleo-item-compact">
+                        <div class="nucleo-name-compact">
+                            <i class="fas fa-building"></i>
+                            {{ nucleo.nome }}
+                        </div>
+                        <div class="nucleo-stats-compact">
+                            <span class="nucleo-stat-compact">
+                                <i class="fas fa-car"></i>
+                                {{ nucleo.veicoli }}
+                            </span>
+                            <span class="nucleo-stat-compact">
+                                <i class="fas fa-building"></i>
+                                {{ nucleo.fornitori }}
+                            </span>
+                            {% if nucleo.manutenzioni_da_fare > 0 %}
+                            <span class="nucleo-stat-compact warning">
+                                <i class="fas fa-wrench"></i>
+                                {{ nucleo.manutenzioni_da_fare }}
+                            </span>
+                            {% endif %}
+                            {% if nucleo.scadenze_urgenti > 0 %}
+                            <span class="nucleo-stat-compact urgent">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ nucleo.scadenze_urgenti }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- COLONNA DESTRA -->
+        <div class="panel-column">
+            
+            <!-- SCADENZE URGENTI -->
+            {% if scadenze_urgenti %}
+            <div class="panel-compact scadenze-panel">
+                <div class="panel-header-compact">
+                    <div class="panel-title-compact">
+                        <i class="fas fa-clock"></i>
+                        <span>Scadenze Urgenti</span>
+                        <div class="panel-count-compact">{{ scadenze_urgenti|length }}</div>
+                    </div>
+                    <a href="{{ url_for('scadenze.index_scadenze') }}" class="panel-link-compact">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                <div class="panel-content-compact">
+                    {% for scadenza in scadenze_urgenti %}
+                    <div class="item-compact scadenza-item">
+                        <div class="item-main-compact">
+                            <div class="item-plate-compact">{{ scadenza.veicolo.targa }}</div>
+                            <div class="item-desc-compact">{{ scadenza.tipo_scadenza }}</div>
+                        </div>
+                        <div class="item-urgency-compact">
+                            {% if scadenza.giorni_scadenza <= 0 %}
+                                <span class="urgency-expired">SCADUTA</span>
+                            {% elif scadenza.giorni_scadenza <= 7 %}
+                                <span class="urgency-critical">{{ scadenza.giorni_scadenza }}gg</span>
+                            {% else %}
+                                <span class="urgency-warning">{{ scadenza.giorni_scadenza }}gg</span>
+                            {% endif %}
+                        </div>
+                        <div class="item-actions-compact">
+                            <a href="{{ url_for('scadenze.dettaglio_scadenza', id=scadenza.id) }}" class="action-btn-compact">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ULTIME MANUTENZIONI COMPLETATE -->
+            {% if ultime_manutenzioni %}
+            <div class="panel-compact manutenzioni-completate-panel">
+                <div class="panel-header-compact">
+                    <div class="panel-title-compact">
                         <i class="fas fa-check-circle"></i>
-                        <h3>Tutte le manutenzioni sono state completate!</h3>
-                        <p>Non ci sono interventi in sospeso al momento.</p>
+                        <span>Completate di Recente</span>
                     </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Pannello Scadenze Urgenti MIGLIORATO -->
-        <div class="dashboard-panel warning-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-exclamation-triangle"></i> Scadenze Urgenti</h3>
-                <a href="{{ url_for('scadenze.index_scadenze') }}" class="panel-link">
-                    Visualizza Tutte <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-            <div class="panel-content">
-                {% if scadenze_urgenti %}
-                    <div class="urgent-list-improved">
-                        {% for scadenza in scadenze_urgenti %}
-                        <div class="urgent-item-improved {% if scadenza.giorni_alla_scadenza <= 0 %}expired{% elif scadenza.giorni_alla_scadenza <= 7 %}critical{% elif scadenza.giorni_alla_scadenza <= 15 %}warning{% endif %}">
-                            <div class="urgent-header">
-                                <div class="vehicle-plate-urgent">{{ scadenza.veicolo.targa }}</div>
-                                <div class="urgency-badge">
-                                    {% if scadenza.giorni_alla_scadenza <= 0 %}
-                                        <span class="days-badge expired">SCADUTA</span>
-                                    {% elif scadenza.giorni_alla_scadenza <= 7 %}
-                                        <span class="days-badge critical">{{ scadenza.giorni_alla_scadenza }} giorni</span>
-                                    {% elif scadenza.giorni_alla_scadenza <= 15 %}
-                                        <span class="days-badge warning">{{ scadenza.giorni_alla_scadenza }} giorni</span>
-                                    {% else %}
-                                        <span class="days-badge ok">{{ scadenza.giorni_alla_scadenza }} giorni</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="urgent-body">
-                                <div class="urgent-type-improved">{{ scadenza.tipo_scadenza }}</div>
-                                <div class="vehicle-info-urgent">
-                                    <span class="vehicle-brand">{{ scadenza.veicolo.marca }}</span>
-                                    <span class="vehicle-model">{{ scadenza.veicolo.modello }}</span>
-                                </div>
-                                <div class="urgent-date-full">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    {{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}
-                                </div>
-                            </div>
+                </div>
+                <div class="panel-content-compact">
+                    {% for manutenzione in ultime_manutenzioni[:4] %}
+                    <div class="item-compact completed-item">
+                        <div class="item-main-compact">
+                            <div class="item-plate-compact">{{ manutenzione.veicolo.targa }}</div>
+                            <div class="item-desc-compact">{{ manutenzione.tipo_intervento }}</div>
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-check"></i>
-                        <p>Nessuna scadenza urgente</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Pannello Ultime Manutenzioni Completate MIGLIORATO -->
-        <div class="dashboard-panel success-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-check-circle"></i> Ultime Manutenzioni Completate</h3>
-                <a href="{{ url_for('manutenzioni.index_manutenzioni', stato='fatto') }}" class="panel-link">
-                    Visualizza Tutte <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-            <div class="panel-content">
-                {% if ultime_manutenzioni %}
-                    <div class="recent-list-improved">
-                        {% for manutenzione in ultime_manutenzioni %}
-                        <div class="recent-item-improved">
-                            <div class="recent-header">
-                                <div class="vehicle-plate-recent">{{ manutenzione.veicolo.targa }}</div>
-                                <div class="recent-status">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Completata</span>
-                                </div>
-                            </div>
-                            <div class="recent-body">
-                                <div class="recent-type-improved">{{ manutenzione.tipo_intervento }}</div>
-                                <div class="vehicle-info-recent">
-                                    <span class="vehicle-brand">{{ manutenzione.veicolo.marca }}</span>
-                                    <span class="vehicle-model">{{ manutenzione.veicolo.modello }}</span>
-                                </div>
-                                {% if manutenzione.fornitore %}
-                                <div class="recent-supplier">
-                                    <i class="fas fa-building"></i>
-                                    {{ manutenzione.fornitore.ragione_sociale }}
-                                </div>
-                                {% endif %}
-                                <div class="recent-date-full">
-                                    <i class="fas fa-calendar-check"></i>
-                                    {{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}
-                                </div>
-                            </div>
+                        <div class="item-date-compact">{{ manutenzione.data_intervento.strftime('%d/%m') }}</div>
+                        <div class="item-status-compact">
+                            <i class="fas fa-check text-success"></i>
                         </div>
-                        {% endfor %}
                     </div>
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-tools"></i>
-                        <p>Nessuna manutenzione registrata</p>
-                    </div>
-                {% endif %}
+                    {% endfor %}
+                </div>
             </div>
+            {% endif %}
+
         </div>
     </div>
 </div>
 
+<!-- CSS DASHBOARD ELEGANTE E COMPATTA -->
 <style>
-/* STILI MIGLIORATI PER TUTTE LE CARD */
-
-/* Grid migliorata per i pannelli */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 20px;
-    margin-top: 30px;
+.dashboard-elegant {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
 }
 
-/* Pannello largo per manutenzioni da fare */
-.wide-panel {
-    grid-column: span 2;
+/* HEADER COMPATTO */
+.dashboard-header-compact {
+    margin-bottom: 1.5rem;
 }
 
-/* === MANUTENZIONI DA FARE - CARD MIGLIORATE === */
-.maintenance-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 15px;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-.maintenance-card {
-    background: rgba(0, 20, 0, 0.4);
-    border: 1px solid rgba(255, 193, 7, 0.4);
-    border-radius: 10px;
-    padding: 15px;
-    transition: all 0.3s ease;
-}
-
-.maintenance-card:hover {
-    border-color: #ffc107;
-    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
-    transform: translateY(-2px);
-}
-
-.maintenance-header {
+.header-main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+    gap: 2rem;
+    flex-wrap: wrap;
 }
 
-.vehicle-plate-large {
-    font-size: 18px;
-    font-weight: bold;
-    color: #00ff41;
-    background: rgba(0, 255, 65, 0.1);
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px solid rgba(0, 255, 65, 0.3);
+.title-section .dashboard-title {
+    font-size: 1.6rem;
+    color: var(--matrix-green);
+    margin-bottom: 0.25rem;
+    font-family: 'Orbitron', monospace;
 }
 
-.maintenance-date {
-    color: #ffc107;
-    font-size: 13px;
+.title-section .dashboard-subtitle {
+    font-size: 0.9rem;
+    color: var(--matrix-text-dim);
+    margin: 0;
+}
+
+/* NUCLEO COMPATTO */
+.nucleo-compact {
     display: flex;
     align-items: center;
-    gap: 5px;
-}
-
-.maintenance-body {
-    margin-bottom: 15px;
-}
-
-.maintenance-type-large {
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffc107;
-    margin-bottom: 8px;
-}
-
-.vehicle-info-large {
-    margin-bottom: 8px;
-}
-
-.vehicle-brand {
-    color: #00ff41;
-    font-weight: 500;
-    margin-right: 5px;
-}
-
-.vehicle-model {
-    color: #ccc;
-    font-weight: 400;
-}
-
-.maintenance-supplier {
-    color: #999;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.maintenance-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-maintenance-action {
-    flex: 1;
-    padding: 8px 12px;
-    background: rgba(0, 255, 65, 0.1);
-    color: #00ff41;
-    text-decoration: none;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 5px;
-    font-size: 12px;
-    text-align: center;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-.btn-maintenance-action:hover {
-    background: rgba(0, 255, 65, 0.2);
-    transform: translateY(-1px);
-}
-
-/* === SCADENZE URGENTI - CARD MIGLIORATE === */
-.urgent-list-improved {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-.urgent-item-improved {
-    background: rgba(20, 0, 0, 0.4);
-    border: 1px solid rgba(220, 53, 69, 0.4);
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0.75rem 1rem;
     border-radius: 8px;
-    padding: 12px;
-    transition: all 0.3s ease;
+    border: 1px solid var(--matrix-green);
 }
 
-.urgent-item-improved:hover {
-    border-color: #dc3545;
-    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.2);
-    transform: translateY(-1px);
-}
-
-.urgent-item-improved.expired {
-    border-color: #721c24;
-    background: rgba(40, 0, 0, 0.6);
-}
-
-.urgent-item-improved.critical {
-    border-color: #dc3545;
-    background: rgba(30, 0, 0, 0.5);
-}
-
-.urgent-item-improved.warning {
-    border-color: #fd7e14;
-    background: rgba(30, 15, 0, 0.4);
-}
-
-.urgent-header {
+.admin-badge, .user-badge {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
-}
-
-.vehicle-plate-urgent {
-    font-size: 14px;
-    font-weight: bold;
-    color: #00ff41;
-    background: rgba(0, 255, 65, 0.1);
-    padding: 3px 8px;
-    border-radius: 4px;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-}
-
-.days-badge {
-    padding: 3px 8px;
+    gap: 0.4rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
 }
 
-.days-badge.expired {
-    background: rgba(220, 53, 69, 0.2);
-    color: #dc3545;
-    border: 1px solid #dc3545;
+.admin-badge {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #000;
 }
 
-.days-badge.critical {
-    background: rgba(220, 53, 69, 0.15);
-    color: #dc3545;
-    border: 1px solid rgba(220, 53, 69, 0.4);
+.user-badge {
+    background: linear-gradient(135deg, var(--matrix-green), #00ff7f);
+    color: #000;
 }
 
-.days-badge.warning {
-    background: rgba(253, 126, 20, 0.15);
-    color: #fd7e14;
-    border: 1px solid rgba(253, 126, 20, 0.4);
-}
-
-.days-badge.ok {
-    background: rgba(40, 167, 69, 0.15);
-    color: #28a745;
-    border: 1px solid rgba(40, 167, 69, 0.4);
-}
-
-.urgent-body {
-    margin-top: 8px;
-}
-
-.urgent-type-improved {
-    font-size: 14px;
+.nucleo-display {
+    font-size: 0.85rem;
+    color: var(--matrix-green);
     font-weight: 500;
-    color: #dc3545;
-    margin-bottom: 6px;
 }
 
-.vehicle-info-urgent {
-    margin-bottom: 6px;
+.nucleo-selector-compact {
+    margin: 0;
 }
 
-.urgent-date-full {
-    color: #999;
-    font-size: 11px;
+.nucleo-select-compact {
+    background: var(--matrix-dark);
+    border: 1px solid var(--matrix-green);
+    color: var(--matrix-text);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: 'Orbitron', monospace;
+}
+
+.user-info {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--matrix-text-dim);
 }
 
-/* === MANUTENZIONI COMPLETATE - CARD MIGLIORATE === */
-.recent-list-improved {
+/* STATISTICHE COMPATTE */
+.stats-compact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card-compact {
+    background: linear-gradient(135deg, var(--matrix-dark), var(--matrix-gray));
+    border: 1px solid var(--matrix-light-gray);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.stat-card-compact:hover {
+    border-color: var(--matrix-green);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 65, 0.15);
+}
+
+.stat-icon-compact {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 1.1rem;
+}
+
+.stat-card-compact.veicoli .stat-icon-compact { background: rgba(0, 123, 255, 0.1); color: #007bff; }
+.stat-card-compact.fornitori .stat-icon-compact { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+.stat-card-compact.manutenzioni .stat-icon-compact { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+.stat-card-compact.scadenze .stat-icon-compact { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+
+.stat-content-compact {
+    flex: 1;
+}
+
+.stat-number-compact {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--matrix-green);
+    font-family: 'Orbitron', monospace;
+    line-height: 1;
+}
+
+.stat-label-compact {
+    font-size: 0.8rem;
+    color: var(--matrix-text);
+    margin: 0.2rem 0;
+}
+
+.stat-detail-compact {
+    font-size: 0.7rem;
+    color: var(--matrix-text-dim);
+}
+
+.stat-action-compact {
+    color: var(--matrix-green);
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card-compact:hover .stat-action-compact {
+    opacity: 1;
+}
+
+/* PANNELLI OPERATIVI */
+.operational-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.panel-column {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    max-height: 500px;
-    overflow-y: auto;
+    gap: 1rem;
 }
 
-.recent-item-improved {
-    background: rgba(0, 20, 0, 0.4);
-    border: 1px solid rgba(40, 167, 69, 0.4);
+.panel-compact {
+    background: var(--matrix-dark);
+    border: 1px solid var(--matrix-light-gray);
     border-radius: 8px;
-    padding: 12px;
-    transition: all 0.3s ease;
+    overflow: hidden;
 }
 
-.recent-item-improved:hover {
-    border-color: #28a745;
-    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.2);
-    transform: translateY(-1px);
-}
-
-.recent-header {
+.panel-header-compact {
+    background: linear-gradient(135deg, var(--matrix-gray), var(--matrix-light-gray));
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--matrix-green);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
 }
 
-.vehicle-plate-recent {
-    font-size: 14px;
-    font-weight: bold;
-    color: #00ff41;
-    background: rgba(0, 255, 65, 0.1);
-    padding: 3px 8px;
+.panel-title-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--matrix-green);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.panel-count-compact {
+    background: var(--matrix-green);
+    color: var(--matrix-black);
+    padding: 0.15rem 0.4rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.panel-link-compact {
+    color: var(--matrix-green);
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.panel-link-compact:hover {
+    opacity: 1;
+}
+
+.panel-content-compact {
+    padding: 0.75rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* ITEMS COMPATTI */
+.item-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--matrix-light-gray);
+    transition: background 0.3s ease;
+}
+
+.item-compact:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.item-compact:last-child {
+    border-bottom: none;
+}
+
+.item-main-compact {
+    flex: 1;
+}
+
+.item-plate-compact {
+    font-family: 'Orbitron', monospace;
+    font-weight: 600;
+    color: var(--matrix-green);
+    font-size: 0.8rem;
+}
+
+.item-desc-compact {
+    color: var(--matrix-text-dim);
+    font-size: 0.75rem;
+    margin-top: 0.1rem;
+}
+
+.item-date-compact {
+    font-size: 0.7rem;
+    color: var(--matrix-text-dim);
+    margin-right: 0.5rem;
+}
+
+.item-urgency-compact {
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.urgency-expired { color: var(--matrix-danger); }
+.urgency-critical { color: var(--matrix-warning); }
+.urgency-warning { color: #ffc107; }
+
+.item-actions-compact {
+    min-width: 30px;
+}
+
+.action-btn-compact {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
     border-radius: 4px;
-    border: 1px solid rgba(0, 255, 65, 0.3);
+    background: rgba(0, 255, 65, 0.1);
+    color: var(--matrix-green);
+    transition: all 0.3s ease;
 }
 
-.recent-status {
+.action-btn-compact:hover {
+    background: var(--matrix-green);
+    color: var(--matrix-black);
+}
+
+/* PANORAMICA NUCLEI */
+.nucleo-item-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--matrix-light-gray);
+}
+
+.nucleo-name-compact {
     display: flex;
     align-items: center;
-    gap: 5px;
-    color: #28a745;
-    font-size: 11px;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--matrix-green);
     font-weight: 500;
 }
 
-.recent-status i {
-    font-size: 12px;
+.nucleo-stats-compact {
+    display: flex;
+    gap: 0.5rem;
 }
 
-.recent-body {
-    margin-top: 8px;
-}
-
-.recent-type-improved {
-    font-size: 14px;
-    font-weight: 500;
-    color: #28a745;
-    margin-bottom: 6px;
-}
-
-.vehicle-info-recent {
-    margin-bottom: 6px;
-}
-
-.recent-supplier {
-    color: #999;
-    font-size: 11px;
+.nucleo-stat-compact {
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin-bottom: 6px;
+    gap: 0.2rem;
+    font-size: 0.7rem;
+    color: var(--matrix-text-dim);
 }
 
-.recent-date-full {
-    color: #999;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+.nucleo-stat-compact.warning { color: var(--matrix-warning); }
+.nucleo-stat-compact.urgent { color: var(--matrix-danger); }
 
-/* Empty state migliorato */
-.empty-state-large {
+.panel-more-compact {
     text-align: center;
-    padding: 40px 20px;
-    color: #00ff41;
+    padding: 0.5rem;
+    border-top: 1px solid var(--matrix-light-gray);
+    margin-top: 0.5rem;
 }
 
-.empty-state-large i {
-    font-size: 48px;
-    margin-bottom: 15px;
-    color: #28a745;
+.panel-more-compact a {
+    color: var(--matrix-green);
+    font-size: 0.75rem;
+    text-decoration: none;
+    opacity: 0.8;
 }
 
-.empty-state-large h3 {
-    margin-bottom: 10px;
-    color: #00ff41;
-    font-size: 18px;
+.panel-more-compact a:hover {
+    opacity: 1;
 }
 
-.empty-state-large p {
-    color: #999;
-    font-size: 14px;
-}
-
-/* Pannelli colorati */
-.priority-panel {
-    border-left: 4px solid #ffc107;
-}
-
-.priority-panel .panel-header h3 {
-    color: #ffc107;
-}
-
-.warning-panel {
-    border-left: 4px solid #dc3545;
-}
-
-.warning-panel .panel-header h3 {
-    color: #dc3545;
-}
-
-.success-panel {
-    border-left: 4px solid #28a745;
-}
-
-.success-panel .panel-header h3 {
-    color: #28a745;
-}
-
-/* Card di statistiche migliorata */
-.stat-card.priority {
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
-    border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-.stat-card.priority .stat-trend.alert {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .wide-panel {
-        grid-column: span 2;
-    }
-}
-
+/* RESPONSIVE */
 @media (max-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .wide-panel {
-        grid-column: span 1;
-    }
-    
-    .maintenance-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .maintenance-header, .urgent-header, .recent-header {
+    .header-main {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+        gap: 1rem;
+    }
+    
+    .nucleo-compact {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .stats-compact-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .operational-panels {
+        grid-template-columns: 1fr;
     }
 }
 </style>
+
 {% endblock %}

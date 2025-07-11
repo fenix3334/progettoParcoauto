@@ -6,6 +6,7 @@ from app.routes.fornitori import fornitori_bp
 from app.routes.manutenzioni import manutenzioni_bp
 from app.routes.scadenze import scadenze_bp
 from app.routes.auth import auth_bp
+from app.routes.admin import admin_bp
 
 def create_app():
     app = Flask(__name__)
@@ -32,6 +33,7 @@ def create_app():
     
     # Registra blueprint
     app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(admin_bp, url_prefix='/admin')  # NUOVO BLUEPRINT
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(veicoli_bp, url_prefix='/veicoli')
     app.register_blueprint(fornitori_bp, url_prefix='/fornitori')

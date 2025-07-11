@@ -3,6 +3,22 @@ from datetime import datetime, date
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# MODELLO PER GESTIONE NUCLEI DINAMICA
+class Nucleo(db.Model):
+    __tablename__ = 'nuclei'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False, unique=True)
+    descrizione = db.Column(db.String(200))
+    indirizzo = db.Column(db.String(200))
+    telefono = db.Column(db.String(20))
+    email = db.Column(db.String(100))
+    attivo = db.Column(db.Boolean, default=True)
+    data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Nucleo {self.nome}>'
+
 class Veicolo(db.Model):
     __tablename__ = 'veicoli'
     
@@ -14,21 +30,25 @@ class Veicolo(db.Model):
     data_immatricolazione = db.Column(db.Date, nullable=False)
     km_attuali = db.Column(db.Integer, default=0)
     carburante = db.Column(db.String(20), nullable=False)
-    carburante_personalizzato = db.Column(db.String(50))  # NUOVO CAMPO
+    carburante_personalizzato = db.Column(db.String(50))
     cilindrata = db.Column(db.Integer)
     colore = db.Column(db.String(30))
     stato = db.Column(db.String(20), default='Attivo')
     note = db.Column(db.Text)
     
-    # NUOVI CAMPI PER CARTA CARBURANTE
+    # CAMPI PER CARTA CARBURANTE
     carta_carburante = db.Column(db.String(100))
     pin_carburante = db.Column(db.String(20))
     
-    # NUOVO CAMPO PER SOCIETÀ NOLEGGIO
+    # CAMPO PER SOCIETÀ NOLEGGIO
     societa_noleggio_id = db.Column(db.Integer, db.ForeignKey('fornitori.id'))
     
-    # NUOVO CAMPO PER NUCLEO
+    # CAMPO NUCLEO
     nucleo = db.Column(db.String(50), default='Via Capitel')
+    
+    # 🆕 NUOVO CAMPO UNITÀ OPERATIVA
+    unita_operativa = db.Column(db.String(100), default='Cure Primarie ADI Via del Capitel')
+    unita_operativa_personalizzata = db.Column(db.String(100))  # Per opzione "Altro"
     
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -46,6 +66,11 @@ class Veicolo(db.Model):
     @property
     def carburante_display(self):
         return self.carburante_personalizzato if self.carburante_personalizzato else self.carburante
+    
+    @property
+    def unita_operativa_display(self):
+        """Restituisce l'unità operativa da visualizzare (personalizzata o predefinita)"""
+        return self.unita_operativa_personalizzata if self.unita_operativa_personalizzata else self.unita_operativa
 
     def __repr__(self):
         return f'<Veicolo {self.targa}>'
@@ -55,49 +80,71 @@ class Fornitore(db.Model):
     __tablename__ = 'fornitori'
     
     id = db.Column(db.Integer, primary_key=True)
-    ragione_sociale = db.Column(db.String(100), nullable=False)
-    partita_iva = db.Column(db.String(20), unique=True)
-    codice_fiscale = db.Column(db.String(20))
+    ragione_sociale = db.Column(db.String(200), nullable=False)
+    partita_iva = db.Column(db.String(11), unique=True, nullable=True)
+    codice_fiscale = db.Column(db.String(16))
     indirizzo = db.Column(db.String(200))
-    citta = db.Column(db.String(50), nullable=False)
-    cap = db.Column(db.String(10), nullable=False)
-    provincia = db.Column(db.String(5))
-    telefono = db.Column(db.String(20))
-    telefono_2 = db.Column(db.String(20))  # NUOVO CAMPO
-    telefono_3 = db.Column(db.String(20))  # NUOVO CAMPO
-    email = db.Column(db.String(100))
-    email_2 = db.Column(db.String(100))    # NUOVO CAMPO
-    email_3 = db.Column(db.String(100))    # NUOVO CAMPO
-    referente = db.Column(db.String(100))
-    settore = db.Column(db.String(50))
-    settore_2 = db.Column(db.String(50))   # NUOVO CAMPO
-    settore_3 = db.Column(db.String(50))   # NUOVO CAMPO
-    settore_personalizzato = db.Column(db.String(100))  # NUOVO CAMPO
-    note = db.Column(db.Text)
-    attivo = db.Column(db.Boolean, default=True)
+    citta = db.Column(db.String(100))
+    cap = db.Column(db.String(5))
+    provincia = db.Column(db.String(2))
     
-    # NUOVO CAMPO PER NUCLEO
+    # TELEFONI MULTIPLI
+    telefono = db.Column(db.String(20))
+    telefono_2 = db.Column(db.String(20))
+    telefono_3 = db.Column(db.String(20))
+    
+    # EMAIL MULTIPLE
+    email = db.Column(db.String(100))
+    email_2 = db.Column(db.String(100))
+    email_3 = db.Column(db.String(100))
+    
+    referente = db.Column(db.String(100))
+    
+    # SETTORI MULTIPLI
+    settore = db.Column(db.String(100))
+    settore_2 = db.Column(db.String(100))
+    settore_3 = db.Column(db.String(100))
+    settore_personalizzato = db.Column(db.String(100))
+    
+    # CAMPO NUCLEO
     nucleo = db.Column(db.String(50), default='Via Capitel')
     
+    note = db.Column(db.Text)
+    attivo = db.Column(db.Boolean, default=True)
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relazioni
-    manutenzioni = db.relationship('Manutenzione', backref='fornitore', lazy=True,
-                                 order_by='desc(Manutenzione.data_intervento)')
-    veicoli_noleggio = db.relationship('Veicolo', foreign_keys='Veicolo.societa_noleggio_id', 
-                                     backref='fornitore_noleggio')
+    manutenzioni = db.relationship('Manutenzione', backref='fornitore', lazy=True)
+    
+    def clean_field(self, value):
+        """Pulisce i campi opzionali"""
+        if value and value.strip():
+            return value.strip()
+        return None
+    
+    @property
+    def telefoni_lista(self):
+        telefoni = []
+        if self.telefono: telefoni.append(self.telefono)
+        if self.telefono_2: telefoni.append(self.telefono_2)
+        if self.telefono_3: telefoni.append(self.telefono_3)
+        return telefoni
+    
+    @property
+    def email_lista(self):
+        emails = []
+        if self.email: emails.append(self.email)
+        if self.email_2: emails.append(self.email_2)
+        if self.email_3: emails.append(self.email_3)
+        return emails
     
     @property
     def settori_lista(self):
         settori = []
-        if self.settore:
-            settori.append(self.settore)
-        if self.settore_2:
-            settori.append(self.settore_2)
-        if self.settore_3:
-            settori.append(self.settore_3)
-        if self.settore_personalizzato:
-            settori.append(self.settore_personalizzato)
+        if self.settore: settori.append(self.settore)
+        if self.settore_2: settori.append(self.settore_2)
+        if self.settore_3: settori.append(self.settore_3)
+        if self.settore_personalizzato: settori.append(self.settore_personalizzato)
         return settori
     
     @property
@@ -125,10 +172,10 @@ class Manutenzione(db.Model):
     prossima_scadenza_km = db.Column(db.Integer)
     note = db.Column(db.Text)
     
-    # NUOVO CAMPO PER FLAG FATTO/DA FARE
+    # CAMPO PER FLAG FATTO/DA FARE
     stato = db.Column(db.String(20), default='Da Fare')
     
-    # NUOVO CAMPO PER NUCLEO
+    # CAMPO NUCLEO
     nucleo = db.Column(db.String(50), default='Via Capitel')
     
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
@@ -153,69 +200,104 @@ class Scadenza(db.Model):
     costo = db.Column(db.Numeric(10, 2))
     stato = db.Column(db.String(20), default='Attiva')
     note = db.Column(db.Text)
+    
+    # NOTIFICHE
     notifica_giorni = db.Column(db.Integer, default=30)
     
-    # NUOVO CAMPO PER NUCLEO
+    # CAMPO NUCLEO
     nucleo = db.Column(db.String(50), default='Via Capitel')
     
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    @property
-    def giorni_alla_scadenza(self):
-        if self.data_scadenza:
-            delta = self.data_scadenza - date.today()
-            return delta.days
-        return None
-    
-    @property
-    def urgente(self):
-        giorni = self.giorni_alla_scadenza
-        if giorni is not None:
-            return giorni <= self.notifica_giorni
-        return False
     
     @property
     def costo_formattato(self):
         if self.costo:
             return f"€ {self.costo:.2f}"
         return "N/A"
+    
+    @property
+    def giorni_scadenza(self):
+        """Calcola i giorni alla scadenza"""
+        if self.data_scadenza:
+            delta = self.data_scadenza - date.today()
+            return delta.days
+        return None
+    
+    @property
+    def stato_urgenza(self):
+        """Determina lo stato di urgenza"""
+        giorni = self.giorni_scadenza
+        if giorni is None:
+            return 'sconosciuto'
+        elif giorni < 0:
+            return 'scaduta'
+        elif giorni <= 7:
+            return 'critica'
+        elif giorni <= 30:
+            return 'urgente'
+        else:
+            return 'normale'
 
     def __repr__(self):
-        return f'<Scadenza {self.tipo_scadenza} - {self.data_scadenza}>'
+        return f'<Scadenza {self.id} - {self.tipo_scadenza}>'
 
 
-# MODELLO USER CON FLASK-LOGIN
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
+    
+    # CAMPO NUCLEO - DETERMINA QUALI DATI PUÒ VEDERE
     nucleo = db.Column(db.String(50), default='Via Capitel')
+    
+    # CAMPO RUOLO - ADMIN PUÒ VEDERE TUTTI I NUCLEI
+    ruolo = db.Column(db.String(20), default='user')  # 'user' o 'admin'
+    
     attivo = db.Column(db.Boolean, default=True)
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
     ultimo_accesso = db.Column(db.DateTime)
     
     def set_password(self, password):
-        """Imposta la password con hash sicuro"""
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
-        """Verifica la password"""
         return check_password_hash(self.password_hash, password)
     
-    # Metodi richiesti da Flask-Login
-    def is_authenticated(self):
-        return True
+    @property
+    def is_admin(self):
+        """Controlla se l'utente è admin"""
+        return self.ruolo == 'admin'
     
-    def is_active(self):
-        return self.attivo
+    def can_see_nucleo(self, nucleo_nome):
+        """Controlla se l'utente può vedere dati di un nucleo"""
+        if self.is_admin:
+            return True
+        return self.nucleo == nucleo_nome
     
-    def is_anonymous(self):
-        return False
-    
-    def get_id(self):
-        return str(self.id)
+    def get_nuclei_visibili(self):
+        """Restituisce lista nuclei che l'utente può vedere"""
+        if self.is_admin:
+            return Nucleo.query.filter_by(attivo=True).all()
+        else:
+            return Nucleo.query.filter_by(nome=self.nucleo, attivo=True).all()
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+
+class SocietaNoleggio(db.Model):
+    __tablename__ = 'societa_noleggio'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ragione_sociale = db.Column(db.String(200), nullable=False)
+    partita_iva = db.Column(db.String(11))
+    telefono = db.Column(db.String(20))
+    email = db.Column(db.String(100))
+    indirizzo = db.Column(db.String(200))
+    note = db.Column(db.Text)
+    data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<SocietaNoleggio {self.ragione_sociale}>'

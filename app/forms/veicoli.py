@@ -1,82 +1,126 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, DateField, SelectField, TextAreaField
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms import StringField, IntegerField, SelectField, DateField, TextAreaField, BooleanField
+from wtforms.validators import DataRequired, Length, Optional, NumberRange
 from datetime import date
-from app.models import Fornitore
 
 class VeicoloForm(FlaskForm):
-    # CAMPI BASE
-    targa = StringField('Targa', validators=[DataRequired(), Length(max=10)])
-    marca = StringField('Marca', validators=[DataRequired(), Length(max=50)])
-    modello = StringField('Modello', validators=[DataRequired(), Length(max=50)])
-    anno_immatricolazione = IntegerField('Anno Immatricolazione', 
-                                       validators=[DataRequired(), NumberRange(min=1950, max=date.today().year)])
-    data_immatricolazione = DateField('Data Immatricolazione', validators=[DataRequired()])
-    km_attuali = IntegerField('KM Attuali', validators=[NumberRange(min=0)], default=0)
+    # DATI IDENTIFICATIVI
+    targa = StringField('Targa', 
+                       validators=[DataRequired(), Length(min=7, max=8)],
+                       render_kw={"placeholder": "Es: AB123CD"})
     
-    # CARBURANTE
-    carburante = SelectField('Carburante', 
-                           choices=[('Benzina', 'Benzina'), ('Diesel', 'Diesel'), 
-                                  ('GPL', 'GPL'), ('Metano', 'Metano'), ('Elettrico', 'Elettrico'), 
-                                  ('Ibrido', 'Ibrido'), ('Personalizzato', 'Personalizzato')],
+    marca = StringField('Marca', 
+                       validators=[DataRequired(), Length(max=50)],
+                       render_kw={"placeholder": "Es: Fiat"})
+    
+    modello = StringField('Modello', 
+                         validators=[DataRequired(), Length(max=50)],
+                         render_kw={"placeholder": "Es: Panda"})
+    
+    # DATI TECNICI
+    anno_immatricolazione = IntegerField('Anno Immatricolazione', 
+                                       validators=[DataRequired(), NumberRange(min=1990, max=2030)])
+    
+    data_immatricolazione = DateField('Data Immatricolazione', 
+                                    validators=[DataRequired()],
+                                    default=date.today)
+    
+    km_attuali = IntegerField('KM Attuali', 
+                             validators=[DataRequired(), NumberRange(min=0)],
+                             default=0)
+    
+    carburante = SelectField('Carburante',
+                           choices=[
+                               ('Benzina', 'Benzina'),
+                               ('Diesel', 'Diesel'),
+                               ('GPL', 'GPL'),
+                               ('Metano', 'Metano'),
+                               ('Elettrico', 'Elettrico'),
+                               ('Ibrido', 'Ibrido'),
+                               ('Altro', 'Altro (personalizzato)')
+                           ],
                            validators=[DataRequired()])
     
-    carburante_personalizzato = StringField('Carburante Personalizzato', 
-                                          validators=[Optional(), Length(max=50)])
+    carburante_personalizzato = StringField('Tipo Carburante Personalizzato',
+                                          validators=[Optional(), Length(max=50)],
+                                          render_kw={"placeholder": "Specifica il tipo di carburante"})
     
-    cilindrata = IntegerField('Cilindrata (cc)', validators=[Optional(), NumberRange(min=50, max=8000)])
-    colore = StringField('Colore', validators=[Optional(), Length(max=30)])
+    cilindrata = IntegerField('Cilindrata (cc)', 
+                             validators=[Optional(), NumberRange(min=500, max=10000)])
     
-    stato = SelectField('Stato', 
-                       choices=[('Attivo', 'Attivo'), ('Inattivo', 'Inattivo'), 
-                              ('In manutenzione', 'In manutenzione'), ('Venduto', 'Venduto')],
-                       default='Attivo')
+    colore = StringField('Colore', 
+                        validators=[Optional(), Length(max=30)],
+                        render_kw={"placeholder": "Es: Bianco"})
     
-    # INFORMAZIONI CARTA CARBURANTE
-    carta_carburante = StringField('Numero Carta Carburante', 
-                                  validators=[Optional(), Length(max=100)])
-    pin_carburante = StringField('PIN Carta', 
-                               validators=[Optional(), Length(max=20)])
+    # 🆕 UNITÀ OPERATIVA
+    unita_operativa = SelectField('Assegnato a U.O.',
+                                choices=[
+                                    ('Cure Primarie ADI Via del Capitel', 'Cure Primarie ADI Via del Capitel'),
+                                    ('Cure Primarie ADI Via Campania', 'Cure Primarie ADI Via Campania'),
+                                    ('Guardia Medica', 'Guardia Medica'),
+                                    ('Altro', 'Altro (personalizzato)')
+                                ],
+                                validators=[DataRequired()],
+                                default='Cure Primarie ADI Via del Capitel')
+    
+    unita_operativa_personalizzata = StringField('U.O. Personalizzata',
+                                                validators=[Optional(), Length(max=100)],
+                                                render_kw={"placeholder": "Specifica l'unità operativa"})
+    
+    # CARTA CARBURANTE
+    carta_carburante = StringField('Carta Carburante', 
+                                  validators=[Optional(), Length(max=100)],
+                                  render_kw={"placeholder": "Es: Q8 Easy"})
+    
+    pin_carburante = StringField('PIN Carta Carburante', 
+                                validators=[Optional(), Length(max=20)],
+                                render_kw={"type": "password", "placeholder": "PIN carta"})
     
     # SOCIETÀ NOLEGGIO
     societa_noleggio_id = SelectField('Società Noleggio',
-                                    coerce=lambda x: int(x) if x else None,
-                                    validators=[Optional()])
+                                    choices=[('', 'Proprietà aziendale')],
+                                    validators=[Optional()],
+                                    coerce=lambda x: int(x) if x else None)
     
-    # NUCLEO
+    # NUCLEO (per admin)
     nucleo = SelectField('Nucleo',
-                        choices=[('Via Capitel', 'Via Capitel'), 
-                               ('Campania', 'Campania')],
-                        default='Via Capitel',
-                        validators=[DataRequired()])
+                        choices=[
+                            ('Via Capitel', 'Via Capitel'),
+                            ('Campania', 'Campania')
+                        ],
+                        validators=[DataRequired()],
+                        default='Via Capitel')
     
-    note = TextAreaField('Note')
+    # STATO
+    stato = SelectField('Stato',
+                       choices=[
+                           ('Attivo', 'Attivo'),
+                           ('Inattivo', 'Inattivo'),
+                           ('In Manutenzione', 'In Manutenzione'),
+                           ('Dismesso', 'Dismesso')
+                       ],
+                       validators=[DataRequired()],
+                       default='Attivo')
     
-    def __init__(self, *args, **kwargs):
-        super(VeicoloForm, self).__init__(*args, **kwargs)
+    # NOTE
+    note = TextAreaField('Note', 
+                        validators=[Optional()],
+                        render_kw={"rows": 4, "placeholder": "Note aggiuntive sul veicolo"})
+    
+    def validate(self, extra_validators=None):
+        """Validazione personalizzata"""
+        rv = FlaskForm.validate(self, extra_validators)
+        if not rv:
+            return False
         
-        # Popola le società di noleggio (fornitori con settore "Società noleggio" o "Leasing")
-        societa_choices = [('', 'Nessuna (veicolo di proprietà)')]
+        # Validazione carburante personalizzato
+        if self.carburante.data == 'Altro' and not self.carburante_personalizzato.data:
+            self.carburante_personalizzato.errors.append('Specifica il tipo di carburante personalizzato')
+            return False
         
-        # Cerca fornitori che sono società di noleggio o leasing
-        fornitori_noleggio = Fornitore.query.filter(Fornitore.attivo == True).all()
+        # Validazione unità operativa personalizzata
+        if self.unita_operativa.data == 'Altro' and not self.unita_operativa_personalizzata.data:
+            self.unita_operativa_personalizzata.errors.append('Specifica l\'unità operativa personalizzata')
+            return False
         
-        # Filtra quelli che hanno "noleggio" o "leasing" in uno dei settori
-        for fornitore in fornitori_noleggio:
-            settori_completi = [
-                fornitore.settore or '',
-                fornitore.settore_2 or '',
-                fornitore.settore_3 or '',
-                fornitore.settore_personalizzato or ''
-            ]
-            
-            # Controlla se uno dei settori contiene "noleggio" o "leasing"
-            è_noleggio = any(
-                'noleggio' in settore.lower() or 'leasing' in settore.lower()
-                for settore in settori_completi
-                if settore
-            )
-            
-            if è_noleggio:
-                societa_choices.append((fornitore.id, fornitore.ragione_sociale))
-        self.societa_noleggio_id.choices = societa_choices
+        return True
